@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Search Cleaning - PolyU CMMS</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+  </head>
+  <body>
+    <script src="js/utils.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/profiles.js"></script>
+    <div class="app-container">
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <i class="fa-solid fa-building-columns"></i>
+          <span>PolyU CMMS</span>
+        </div>
+        <nav class="sidebar-nav">
+          <a href="index.html" class="nav-link"
+            ><i class="fa-solid fa-chart-line"></i> Dashboard</a
+          >
+          <a href="persons.html" class="nav-link"
+            ><i class="fa-solid fa-users"></i> Persons & Profiles</a
+          >
+          <a href="locations.html" class="nav-link"
+            ><i class="fa-solid fa-map-location-dot"></i> Locations & Schools</a
+          >
+          <a href="activities.html" class="nav-link"
+            ><i class="fa-solid fa-calendar-check"></i> Activities</a
+          >
+          <a href="maintenance.html" class="nav-link"
+            ><i class="fa-solid fa-screwdriver-wrench"></i> Maintenance</a
+          >
+          <a href="search-cleaning.html" class="nav-link active"
+            ><i class="fa-solid fa-magnifying-glass"></i> Search Cleaning</a
+          >
+          <a href="reports.html" class="nav-link"
+            ><i class="fa-solid fa-file-invoice"></i> Reports</a
+          >
+        </nav>
+      </aside>
+
+      <main class="main-content">
+        <header class="topbar">
+          <h2>Search Cleaning Activities</h2>
+          <div class="user-info">
+            <span>Admin User</span>
+            <div class="avatar">A</div>
+          </div>
+        </header>
+
+        <div class="content-wrapper">
+          <div class="card">
+            <div class="card-header">
+              <h3>Find Scheduled Cleaning</h3>
+            </div>
+            <div class="card-body">
+              <form
+                id="searchForm"
+                style="
+                  display: grid;
+                  grid-template-columns: 1fr 1fr 1fr auto;
+                  gap: 15px;
+                  align-items: end;
+                "
+              >
+                <div class="form-group">
+                  <label class="form-label">Start Date</label>
+                  <input type="date" class="form-control" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">End Date</label>
+                  <input type="date" class="form-control" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Building / Location</label>
+                  <select class="form-control">
+                    <option>Block Z</option>
+                    <option>Block A</option>
+                    <option>Library</option>
+                    <option>Swimming Pool</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <button
+                    type="button"
+                    class="btn btn-primary"
+                    style="height: 42px"
+                  >
+                    <i class="fa-solid fa-search"></i> Search
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h3>Results</h3>
+            </div>
+            <div class="card-body">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Activity ID</th>
+                    <th>Date</th>
+                    <th>Location</th>
+                    <th>Chemicals Used</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- Mock Data -->
+                  <tr>
+                    <td>#ACT-001</td>
+                    <td>2025-11-21</td>
+                    <td>Block Z, Lobby</td>
+                    <td>Chlorine, Floor Wax</td>
+                    <td><span class="badge badge-warning">Scheduled</span></td>
+                  </tr>
+                  <tr>
+                    <td>#ACT-005</td>
+                    <td>2025-11-22</td>
+                    <td>Block Z, Room 101</td>
+                    <td>None</td>
+                    <td><span class="badge badge-warning">Scheduled</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+    <script src="js/app.js"></script>
+  </body>
+</html>

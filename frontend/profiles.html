@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Profiles - PolyU CMMS</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/layout.css" />
+    <link rel="stylesheet" href="css/components.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+  </head>
+  <body>
+    <script src="js/utils.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/profiles.js"></script>
+    <div class="app-container">
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <i class="fa-solid fa-building-columns"></i>
+          <span>PolyU CMMS</span>
+        </div>
+        <nav class="sidebar-nav">
+          <a href="dashboard.html" class="nav-link"
+            ><i class="fa-solid fa-chart-line"></i> Dashboard</a
+          >
+          <a href="persons.html" class="nav-link"
+            ><i class="fa-solid fa-users"></i> Persons & Profiles</a
+          >
+          <a href="profiles.html" class="nav-link active"
+            ><i class="fa-solid fa-id-card"></i> Worker Profiles</a
+          >
+          <a href="locations.html" class="nav-link"
+            ><i class="fa-solid fa-map-location-dot"></i> Locations & Schools</a
+          >
+          <a href="activities.html" class="nav-link"
+            ><i class="fa-solid fa-calendar-check"></i> Activities</a
+          >
+          <a href="maintenance.html" class="nav-link"
+            ><i class="fa-solid fa-screwdriver-wrench"></i> Maintenance</a
+          >
+          <a href="search-cleaning.html" class="nav-link"
+            ><i class="fa-solid fa-magnifying-glass"></i> Search Cleaning</a
+          >
+          <a href="reports.html" class="nav-link"
+            ><i class="fa-solid fa-file-invoice"></i> Reports</a
+          >
+          <a href="run-sql.html" class="nav-link"
+            ><i class="fa-solid fa-database"></i> SQL Runner</a
+          >
+        </nav>
+      </aside>
+
+      <main class="main-content">
+        <header class="topbar">
+          <h2>Worker Profiles</h2>
+          <div class="user-info">
+            <span>Admin User</span>
+            <div class="avatar">A</div>
+          </div>
+        </header>
+
+        <div class="content-wrapper">
+          <div class="card">
+            <div class="card-header">
+              <h3>Manage Profile Details</h3>
+            </div>
+            <div class="card-body">
+              <form
+                id="profileForm"
+                style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px"
+              >
+                <div class="form-group">
+                  <label class="form-label">Select Person</label>
+                  <select class="form-control">
+                    <option>P-001: Alice Wong</option>
+                    <option>P-002: Bob Lee</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Profile ID (Auto)</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    value="PROF-NEW"
+                    readonly
+                  />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Skills</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    placeholder="e.g. Electrical, Plumbing"
+                  />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Certifications</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    placeholder="e.g. ISO 9001 Safety"
+                  />
+                </div>
+                <div class="form-group" style="grid-column: span 2">
+                  <label class="form-label">Experience Level</label>
+                  <select class="form-control">
+                    <option>Junior</option>
+                    <option>Mid-Level</option>
+                    <option>Senior</option>
+                    <option>Expert</option>
+                  </select>
+                </div>
+                <div class="form-group" style="grid-column: span 2">
+                  <button type="button" class="btn btn-primary">
+                    Update Profile
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h3>Existing Profiles</h3>
+            </div>
+            <div class="card-body">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Profile ID</th>
+                    <th>Person Name</th>
+                    <th>Skills</th>
+                    <th>Level</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>PROF-001</td>
+                    <td>Alice Wong</td>
+                    <td>Management, Logistics</td>
+                    <td>Senior</td>
+                    <td>
+                      <button class="btn btn-sm btn-primary">
+                        <i class="fa-solid fa-pen"></i>
+                      </button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>PROF-002</td>
+                    <td>Bob Lee</td>
+                    <td>Plumbing, HVAC</td>
+                    <td>Mid-Level</td>
+                    <td>
+                      <button class="btn btn-sm btn-primary">
+                        <i class="fa-solid fa-pen"></i>
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+    <script src="js/app.js"></script>
+    <script src="js/profiles.js"></script>
+  </body>
+</html>

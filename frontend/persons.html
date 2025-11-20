@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Persons - PolyU CMMS</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+  </head>
+  <body>
+    <script src="js/utils.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/profiles.js"></script>
+    <div class="app-container">
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <i class="fa-solid fa-building-columns"></i>
+          <span>PolyU CMMS</span>
+        </div>
+        <nav class="sidebar-nav">
+          <a href="index.html" class="nav-link"
+            ><i class="fa-solid fa-chart-line"></i> Dashboard</a
+          >
+          <a href="persons.html" class="nav-link active"
+            ><i class="fa-solid fa-users"></i> Persons & Profiles</a
+          >
+          <a href="locations.html" class="nav-link"
+            ><i class="fa-solid fa-map-location-dot"></i> Locations & Schools</a
+          >
+          <a href="activities.html" class="nav-link"
+            ><i class="fa-solid fa-calendar-check"></i> Activities</a
+          >
+          <a href="maintenance.html" class="nav-link"
+            ><i class="fa-solid fa-screwdriver-wrench"></i> Maintenance</a
+          >
+          <a href="search-cleaning.html" class="nav-link"
+            ><i class="fa-solid fa-magnifying-glass"></i> Search Cleaning</a
+          >
+          <a href="reports.html" class="nav-link"
+            ><i class="fa-solid fa-file-invoice"></i> Reports</a
+          >
+        </nav>
+      </aside>
+
+      <main class="main-content">
+        <header class="topbar">
+          <h2>Persons Management</h2>
+          <div class="user-info">
+            <span>Admin User</span>
+            <div class="avatar">A</div>
+          </div>
+        </header>
+
+        <div class="content-wrapper">
+          <!-- Add Person Form -->
+          <div class="card">
+            <div class="card-header">
+              <h3>Add New Person</h3>
+            </div>
+            <div class="card-body">
+              <form
+                style="
+                  display: grid;
+                  grid-template-columns: 1fr 1fr 1fr;
+                  gap: 15px;
+                "
+              >
+                <div class="form-group">
+                  <label class="form-label">Full Name</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    placeholder="e.g. John Doe"
+                  />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Role</label>
+                  <select class="form-control">
+                    <option>Worker</option>
+                    <option>Manager</option>
+                    <option>Executive</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Supervisor ID (Optional)</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    placeholder="ID of supervisor"
+                  />
+                </div>
+                <div class="form-group" style="grid-column: span 3">
+                  <button type="button" class="btn btn-primary">
+                    Save Person
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- Persons Table -->
+          <div class="card">
+            <div class="card-header">
+              <h3>Registered Persons</h3>
+              <input
+                type="text"
+                class="form-control"
+                placeholder="Search..."
+                style="width: 200px"
+              />
+            </div>
+            <div class="card-body">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Role</th>
+                    <th>Profile ID</th>
+                    <th>Supervisor</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>P-001</td>
+                    <td>Alice Wong</td>
+                    <td>Manager</td>
+                    <td>PROF-001</td>
+                    <td>-</td>
+                    <td>
+                      <button class="btn btn-sm btn-primary">
+                        <i class="fa-solid fa-pen"></i>
+                      </button>
+                      <button
+                        class="btn btn-sm"
+                        style="background: var(--danger); color: white"
+                      >
+                        <i class="fa-solid fa-trash"></i>
+                      </button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>P-002</td>
+                    <td>Bob Lee</td>
+                    <td>Worker</td>
+                    <td>PROF-002</td>
+                    <td>P-001</td>
+                    <td>
+                      <button class="btn btn-sm btn-primary">
+                        <i class="fa-solid fa-pen"></i>
+                      </button>
+                      <button
+                        class="btn btn-sm"
+                        style="background: var(--danger); color: white"
+                      >
+                        <i class="fa-solid fa-trash"></i>
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+    <script src="js/app.js"></script>
+  </body>
+</html>

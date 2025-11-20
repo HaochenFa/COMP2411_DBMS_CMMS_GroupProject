@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Activities - PolyU CMMS</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+  </head>
+  <body>
+    <script src="js/utils.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/profiles.js"></script>
+    <div class="app-container">
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <i class="fa-solid fa-building-columns"></i>
+          <span>PolyU CMMS</span>
+        </div>
+        <nav class="sidebar-nav">
+          <a href="index.html" class="nav-link"
+            ><i class="fa-solid fa-chart-line"></i> Dashboard</a
+          >
+          <a href="persons.html" class="nav-link"
+            ><i class="fa-solid fa-users"></i> Persons & Profiles</a
+          >
+          <a href="locations.html" class="nav-link"
+            ><i class="fa-solid fa-map-location-dot"></i> Locations & Schools</a
+          >
+          <a href="activities.html" class="nav-link active"
+            ><i class="fa-solid fa-calendar-check"></i> Activities</a
+          >
+          <a href="maintenance.html" class="nav-link"
+            ><i class="fa-solid fa-screwdriver-wrench"></i> Maintenance</a
+          >
+          <a href="search-cleaning.html" class="nav-link"
+            ><i class="fa-solid fa-magnifying-glass"></i> Search Cleaning</a
+          >
+          <a href="reports.html" class="nav-link"
+            ><i class="fa-solid fa-file-invoice"></i> Reports</a
+          >
+        </nav>
+      </aside>
+
+      <main class="main-content">
+        <header class="topbar">
+          <h2>Activities Management</h2>
+          <div class="user-info">
+            <span>Admin User</span>
+            <div class="avatar">A</div>
+          </div>
+        </header>
+
+        <div class="content-wrapper">
+          <div class="card">
+            <div class="card-header">
+              <h3>Create New Activity</h3>
+            </div>
+            <div class="card-body">
+              <form
+                style="
+                  display: grid;
+                  grid-template-columns: 1fr 1fr 1fr;
+                  gap: 15px;
+                "
+              >
+                <div class="form-group">
+                  <label class="form-label">Activity Name</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    placeholder="e.g. Annual Cleaning"
+                  />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Type</label>
+                  <select class="form-control">
+                    <option>Cleaning</option>
+                    <option>Renovation</option>
+                    <option>Maintenance</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Date</label>
+                  <input type="date" class="form-control" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Location</label>
+                  <select class="form-control">
+                    <option>Block Z</option>
+                    <option>Block A</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Organizer (Person ID)</label>
+                  <input type="text" class="form-control" placeholder="ID" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">&nbsp;</label>
+                  <button
+                    type="button"
+                    class="btn btn-primary"
+                    style="width: 100%"
+                  >
+                    Create Activity
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h3>Activity List</h3>
+            </div>
+            <div class="card-body">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Location</th>
+                    <th>Date</th>
+                    <th>Organizer</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>ACT-101</td>
+                    <td>Window Cleaning</td>
+                    <td>Cleaning</td>
+                    <td>Block Z</td>
+                    <td>2025-11-25</td>
+                    <td>P-001</td>
+                  </tr>
+                  <tr>
+                    <td>ACT-102</td>
+                    <td>Roof Repair</td>
+                    <td>Maintenance</td>
+                    <td>Block A</td>
+                    <td>2025-11-28</td>
+                    <td>P-005</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>

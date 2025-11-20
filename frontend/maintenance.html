@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Maintenance - PolyU CMMS</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+  </head>
+  <body>
+    <script src="js/utils.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/profiles.js"></script>
+    <div class="app-container">
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <i class="fa-solid fa-building-columns"></i>
+          <span>PolyU CMMS</span>
+        </div>
+        <nav class="sidebar-nav">
+          <a href="index.html" class="nav-link"
+            ><i class="fa-solid fa-chart-line"></i> Dashboard</a
+          >
+          <a href="persons.html" class="nav-link"
+            ><i class="fa-solid fa-users"></i> Persons & Profiles</a
+          >
+          <a href="locations.html" class="nav-link"
+            ><i class="fa-solid fa-map-location-dot"></i> Locations & Schools</a
+          >
+          <a href="activities.html" class="nav-link"
+            ><i class="fa-solid fa-calendar-check"></i> Activities</a
+          >
+          <a href="maintenance.html" class="nav-link active"
+            ><i class="fa-solid fa-screwdriver-wrench"></i> Maintenance</a
+          >
+          <a href="search-cleaning.html" class="nav-link"
+            ><i class="fa-solid fa-magnifying-glass"></i> Search Cleaning</a
+          >
+          <a href="reports.html" class="nav-link"
+            ><i class="fa-solid fa-file-invoice"></i> Reports</a
+          >
+        </nav>
+      </aside>
+
+      <main class="main-content">
+        <header class="topbar">
+          <h2>Maintenance Requests</h2>
+          <div class="user-info">
+            <span>Admin User</span>
+            <div class="avatar">A</div>
+          </div>
+        </header>
+
+        <div class="content-wrapper">
+          <div class="card">
+            <div class="card-header">
+              <h3>Log New Maintenance</h3>
+            </div>
+            <div class="card-body">
+              <form
+                style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px"
+              >
+                <div class="form-group">
+                  <label class="form-label">Issue Description</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    placeholder="e.g. Broken AC"
+                  />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Location</label>
+                  <select class="form-control">
+                    <option>Block Z, Room 204</option>
+                    <option>Library, Floor 1</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Assigned Worker (Person ID)</label>
+                  <input type="text" class="form-control" placeholder="ID" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Priority</label>
+                  <select class="form-control">
+                    <option>High</option>
+                    <option>Medium</option>
+                    <option>Low</option>
+                  </select>
+                </div>
+                <div class="form-group" style="grid-column: span 2">
+                  <button type="button" class="btn btn-primary">
+                    Submit Request
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h3>Maintenance History</h3>
+            </div>
+            <div class="card-body">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Description</th>
+                    <th>Location</th>
+                    <th>Worker</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>M-501</td>
+                    <td>Leaking Pipe</td>
+                    <td>Block V, Toilet</td>
+                    <td>P-002</td>
+                    <td><span class="badge badge-warning">Pending</span></td>
+                  </tr>
+                  <tr>
+                    <td>M-500</td>
+                    <td>Broken Chair</td>
+                    <td>Block Z, Z204</td>
+                    <td>P-003</td>
+                    <td><span class="badge badge-success">Fixed</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+    <script src="js/app.js"></script>
+  </body>
+</html>

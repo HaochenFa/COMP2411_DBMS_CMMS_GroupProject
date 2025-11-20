@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Locations - PolyU CMMS</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+  </head>
+  <body>
+    <script src="js/utils.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/profiles.js"></script>
+    <div class="app-container">
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <i class="fa-solid fa-building-columns"></i>
+          <span>PolyU CMMS</span>
+        </div>
+        <nav class="sidebar-nav">
+          <a href="index.html" class="nav-link"
+            ><i class="fa-solid fa-chart-line"></i> Dashboard</a
+          >
+          <a href="persons.html" class="nav-link"
+            ><i class="fa-solid fa-users"></i> Persons & Profiles</a
+          >
+          <a href="locations.html" class="nav-link active"
+            ><i class="fa-solid fa-map-location-dot"></i> Locations & Schools</a
+          >
+          <a href="activities.html" class="nav-link"
+            ><i class="fa-solid fa-calendar-check"></i> Activities</a
+          >
+          <a href="maintenance.html" class="nav-link"
+            ><i class="fa-solid fa-screwdriver-wrench"></i> Maintenance</a
+          >
+          <a href="search-cleaning.html" class="nav-link"
+            ><i class="fa-solid fa-magnifying-glass"></i> Search Cleaning</a
+          >
+          <a href="reports.html" class="nav-link"
+            ><i class="fa-solid fa-file-invoice"></i> Reports</a
+          >
+        </nav>
+      </aside>
+
+      <main class="main-content">
+        <header class="topbar">
+          <h2>Locations & Schools</h2>
+          <div class="user-info">
+            <span>Admin User</span>
+            <div class="avatar">A</div>
+          </div>
+        </header>
+
+        <div class="content-wrapper">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px">
+            <!-- Locations Section -->
+            <div class="card">
+              <div class="card-header">
+                <h3>Campus Locations</h3>
+                <button class="btn btn-sm btn-primary">+ Add</button>
+              </div>
+              <div class="card-body">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Building</th>
+                      <th>Room / Area</th>
+                      <th>Type</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>Block Z</td>
+                      <td>Z204</td>
+                      <td>Classroom</td>
+                    </tr>
+                    <tr>
+                      <td>Block A</td>
+                      <td>Main Hall</td>
+                      <td>Hall</td>
+                    </tr>
+                    <tr>
+                      <td>Library</td>
+                      <td>Floor 3</td>
+                      <td>Study Area</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Schools Section -->
+            <div class="card">
+              <div class="card-header">
+                <h3>Schools & Departments</h3>
+                <button class="btn btn-sm btn-primary">+ Add</button>
+              </div>
+              <div class="card-body">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>School Name</th>
+                      <th>Department</th>
+                      <th>Location</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>School of Design</td>
+                      <td>Industrial Design</td>
+                      <td>Block V</td>
+                    </tr>
+                    <tr>
+                      <td>Computing</td>
+                      <td>COMP</td>
+                      <td>Block PQ</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+    <script src="js/app.js"></script>
+  </body>
+</html>
