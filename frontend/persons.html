@@ -13,7 +13,7 @@
   <body>
     <script src="js/utils.js"></script>
     <script src="js/app.js"></script>
-    <script src="js/profiles.js"></script>
+    <script src="js/persons.js"></script>
     <div class="app-container">
       <aside class="sidebar">
         <div class="sidebar-header">
@@ -59,6 +59,39 @@
           <div class="card">
             <div class="card-header">
               <h3>Add New Person</h3>
+              <button class="btn btn-sm btn-primary" id="bulkAddBtn">
+                Bulk Upload (JSON)
+              </button>
+              <div
+                class="form-group"
+                style="
+                  border-top: 1px solid var(--border-color);
+                  padding-top: 15px;
+                  margin-top: 15px;
+                "
+              >
+                <label class="form-label"
+                  >Or Set-Based Insert (Bulk Upload CSV)</label
+                >
+                <div style="display: flex; gap: 10px">
+                  <input
+                    type="file"
+                    id="bulkUploadFile"
+                    class="form-control"
+                    accept=".csv, .json"
+                  />
+                  <button
+                    type="button"
+                    class="btn btn-secondary"
+                    id="btnBulkUpload"
+                  >
+                    <i class="fa-solid fa-upload"></i> Upload Set
+                  </button>
+                </div>
+                <small style="color: var(--text-muted)"
+                  >Format: Name, Role, Phone, Email</small
+                >
+              </div>
             </div>
             <div class="card-body">
               <form
@@ -124,7 +157,7 @@
                     <th>Actions</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody id="personsTableBody">
                   <tr>
                     <td>P-001</td>
                     <td>Alice Wong</td>

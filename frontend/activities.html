@@ -13,7 +13,7 @@
   <body>
     <script src="js/utils.js"></script>
     <script src="js/app.js"></script>
-    <script src="js/profiles.js"></script>
+    <script src="js/activities.js"></script>
     <div class="app-container">
       <aside class="sidebar">
         <div class="sidebar-header">
@@ -67,6 +67,21 @@
                   gap: 15px;
                 "
               >
+                <div class="form-group">
+                  <label class="form-label">Organizer (Person ID)</label>
+                  <input type="text" class="form-control" placeholder="ID" />
+                </div>
+                <!-- ADD THIS NEW FIELD -->
+                <div class="form-group">
+                  <label class="form-label"
+                    >External Contractor (Optional)</label
+                  >
+                  <input
+                    type="text"
+                    class="form-control"
+                    placeholder="e.g. ABC Cleaning Co."
+                  />
+                </div>
                 <div class="form-group">
                   <label class="form-label">Activity Name</label>
                   <input
@@ -128,7 +143,7 @@
                     <th>Organizer</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody id="activitiesTableBody">
                   <tr>
                     <td>ACT-101</td>
                     <td>Window Cleaning</td>
