@@ -3,6 +3,8 @@
 ## Prerequisites
 
 - Python 3.8+
+- Conda (e.g. Miniconda/Anaconda or Mambaforge)
+- (Optional) [uv](https://github.com/astral-sh/uv) for fast Python package & virtual env management
 - Node.js 16+
 - MySQL Server
 
@@ -15,18 +17,40 @@ Ensure your MySQL server is running. Create a database (default name `cmms_db`) 
 ### 2. Backend (Flask)
 
 1. Navigate to the project root.
-2. Create a virtual environment (optional but recommended):
+2. Create and activate a Conda environment (recommended):
 
     ```bash
-    python3 -m venv venv
-    source venv/bin/activate  # On Windows: venv\Scripts\activate
+    # Create the environment (adjust python version if needed)
+    conda create -n cmms-env python=3.11 -y
+
+    # Activate it
+    conda activate cmms-env
     ```
 
-3. Install dependencies:
+3. Install backend dependencies (pick one of the following):
+
+    **Using pip (standard):**
 
     ```bash
     pip install -r backend/requirements.txt
     ```
+
+    **Using uv (faster, if installed):**
+
+    ```bash
+    # Inside the activated conda env
+    uv pip install -r backend/requirements.txt
+    ```
+
+    > If you prefer, you can also have uv manage the virtual environment entirely:
+    >
+    > ```bash
+    > uv venv .venv
+    > source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+    > uv pip install -r backend/requirements.txt
+    > ```
+    >
+    > In that case you don’t need Conda; just make sure a compatible Python (3.8+) is available.
 
 4. Configure environment variables:
     Create a `.env` file in the `backend` directory (or root, depending on how you run it, but `db.py` loads from current working dir usually).
