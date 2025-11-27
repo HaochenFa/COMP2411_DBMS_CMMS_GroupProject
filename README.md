@@ -15,6 +15,56 @@
 - Node.js 16+
 - MySQL Server
 
+### Installing Docker
+
+#### Windows & macOS (Docker Desktop)
+
+1. Download Docker Desktop from <https://docs.docker.com/desktop/>.
+2. Run the installer and follow the prompts.
+3. Start Docker Desktop (it must be running in the background).
+4. Verify that Docker works in a new terminal:
+
+   ```bash
+   docker --version
+   docker info
+   ```
+
+   The `docker info` command should print details about your Docker engine. If it reports that it cannot connect, make sure Docker Desktop is running.
+
+#### Linux (Docker Engine)
+
+Docker installation varies by distribution. The most reliable source is the official docs: <https://docs.docker.com/engine/install/>.
+
+As a rough guide for Debian/Ubuntu:
+
+```bash
+sudo apt-get update
+sudo apt-get install -y docker.io
+sudo usermod -aG docker "$USER"  # Optional: run docker without sudo
+```
+
+After installation, log out and back in if you changed group membership, then verify:
+
+```bash
+docker --version
+docker info
+```
+
+### Installing Node.js
+
+1. Go to <https://nodejs.org/> and download the latest **LTS** release for your platform.
+2. Install it using the platform installer.
+3. Verify in a new terminal:
+
+   ```bash
+   node --version
+   npm --version
+   ```
+
+On macOS/Linux you can also use a version manager like [`nvm`](https://github.com/nvm-sh/nvm) if you prefer.
+
+> **Note:** The `run.sh` / `run.ps1` scripts will check that both Docker and Node.js are installed and that Docker is running before starting the app.
+
 ## Setup & Running
 
 ### Option A: Desktop app (Electron + Docker, recommended)
