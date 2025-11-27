@@ -62,12 +62,13 @@ Ensure your MySQL server is running. Create a database (default name `cmms_db`) 
     DB_NAME=cmms_db
     ```
 
-5. Initialize the database:
-    Run this from the **project root**:
+5. Initialize the database (DESTRUCTIVE RESET):
+ Run this from the **project root** when you want to create or completely
+ reset the schema as defined in `backend/schema.sql`:
 
-    ```bash
-    python backend/db.py
-    ```
+ ```bash
+ python backend/db_init.py
+ ```
 
 6. Run the server:
     Run this from the **backend** directory:
