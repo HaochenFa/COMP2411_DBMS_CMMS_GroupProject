@@ -108,14 +108,15 @@ async function createMainWindow() {
   });
 
   try {
-    await startDockerStack();
+    // await startDockerStack(); // Removed Docker dependency
+    console.log("Waiting for frontend to be ready...");
     await waitForFrontendReady(FRONTEND_URL);
     await win.loadURL(FRONTEND_URL);
   } catch (err) {
     console.error("Failed to start app stack:", err);
     dialog.showErrorBox(
       "Startup error",
-      `Failed to start the CMMS stack.\n\n${err && err.message ? err.message : String(err)}`
+      `Failed to connect to the application.\n\n${err && err.message ? err.message : String(err)}`
     );
   }
 }

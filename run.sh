@@ -1,42 +1,70 @@
-#!/usr/bin/env bash
-set -euo pipefail
+#!/bin/bash
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-DESKTOP_DIR="${SCRIPT_DIR}/desktop"
+# Kill any running processes on ports 5050 (backend) and 5173 (frontend)
+lsof -ti:5050 | xargs kill -9 2>/dev/null || true
+lsof -ti:5173 | xargs kill -9 2>/dev/null || true
 
-echo "[run.sh] Launching CMMS Electron desktop app..."
+echo "🚀 Starting PolyU CMMS..."
 
-# Check that Docker CLI is available
-if ! command -v docker >/dev/null 2>&1; then
-	echo "[run.sh] Error: Docker CLI (docker) is not installed or not on PATH."
-	echo "Please install Docker Desktop (Windows/macOS) or Docker Engine (Linux): https://docs.docker.com/get-docker/"
-	exit 1
+# 0. Start MySQL
+echo "🗄️  Starting MySQL..."
+if command -v brew >/dev/null 2>&1; then
+    brew services start mysql || echo "MySQL might already be running or failed to start via brew."
+elif command -v mysql.server >/dev/null 2>&1; then
+    mysql.server start || echo "MySQL might already be running."
+else
+    echo "⚠️  Could not find a way to auto-start MySQL. Please ensure it is running."
 fi
 
-# Check that the Docker daemon is running and accessible
-if ! docker info >/dev/null 2>&1; then
-	echo "[run.sh] Error: Docker seems to be installed but the Docker daemon is not running or not accessible."
-	echo "Please start Docker Desktop (or your Docker service) and try again."
-	exit 1
+# Wait for MySQL to be ready
+echo "⏳ Waiting for MySQL to be ready..."
+MAX_RETRIES=30
+COUNT=0
+while ! mysqladmin ping -h "localhost" --silent; do
+    sleep 1
+    COUNT=$((COUNT+1))
+    if [ $COUNT -ge $MAX_RETRIES ]; then
+        echo "❌ MySQL failed to start or is not reachable."
+        exit 1
+    fi
+    echo -n "."
+done
+echo "✅ MySQL is up!"
+
+# 1. Start Backend
+echo "📦 Launching Backend (Port 5050)..."
+cd backend
+if [ ! -d "venv" ]; then
+    echo "Creating Python virtual environment..."
+    python3 -m venv venv
 fi
+source venv/bin/activate
+pip install -r requirements.txt > /dev/null 2>&1
+python3 app.py &
+BACKEND_PID=$!
+cd ..
 
-if ! command -v npm >/dev/null 2>&1; then
-	echo "[run.sh] Error: npm (Node.js) is not installed or not on PATH."
-	echo "Please install Node.js from https://nodejs.org/ and try again."
-	exit 1
-fi
+# 2. Start Frontend
+echo "💻 Launching Frontend..."
+cd frontend
+npm install > /dev/null 2>&1
+npm run dev &
+FRONTEND_PID=$!
+cd ..
 
-if [ ! -d "${DESKTOP_DIR}" ]; then
-	echo "[run.sh] Error: desktop directory not found at ${DESKTOP_DIR}."
-	exit 1
-fi
+# 3. Start Desktop App (Electron)
+echo "🖥️  Launching Desktop App..."
+cd desktop
+npm install > /dev/null 2>&1
+npm start &
+DESKTOP_PID=$!
+cd ..
 
-cd "${DESKTOP_DIR}"
+echo "✅ System is running!"
+echo "   - Backend: http://127.0.0.1:5050"
+echo "   - Frontend: http://localhost:5173"
+echo "   - Desktop App: Launched"
+echo "   (Press CTRL+C to stop)"
 
-if [ ! -d "node_modules" ]; then
-	echo "[run.sh] Installing Electron app dependencies (first-run setup)..."
-	npm install
-fi
-
-echo "[run.sh] Starting Electron app (npm start)..."
-npm start
+# Wait for processes
+wait $BACKEND_PID $FRONTEND_PID $DESKTOP_PID
