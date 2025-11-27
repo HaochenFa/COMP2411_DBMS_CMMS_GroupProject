@@ -16,13 +16,13 @@ from db import init_db
 
 
 if __name__ == "__main__":
-	print(
-	    "[db_init.py] WARNING: This will DROP and RECREATE tables defined in "
-	    "backend/schema.sql for the configured database."
-	)
-	print(
-	    "Use this only for initial setup or when you explicitly want to reset "
-	    "all data."
-	)
+    print(
+        "[db_init.py] WARNING: This will DROP and RECREATE tables defined in "
+        "backend/schema.sql for the configured database."
+    )
+    print(
+        "Use this only for initial setup or when you explicitly want to reset "
+        "all data."
+    )
 
-	init_db()
+    init_db()
