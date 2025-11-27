@@ -2,6 +2,12 @@
 
 ## Prerequisites
 
+### For quick start (recommended)
+
+- Docker Desktop (Windows/macOS) with Docker Compose v2 (the `docker compose` command)
+
+### For manual setup (no Docker)
+
 - Python 3.8+
 - Conda (e.g. Miniconda/Anaconda or Mambaforge)
 - (Optional) [uv](https://github.com/astral-sh/uv) for fast Python package & virtual env management
@@ -10,11 +16,34 @@
 
 ## Setup & Running
 
-### 1. Database Setup
+### Option A: Desktop app (Electron + Docker, recommended)
+
+1. Ensure Docker Desktop is installed and running.
+2. Ensure Node.js (with npm) is installed from <https://nodejs.org/>.
+3. From the project root, run (macOS/Linux):
+
+    ```bash
+    ./run.sh
+    ```
+
+   Or from Windows PowerShell:
+
+    ```powershell
+    .\run.ps1
+    ```
+
+4. The script will:
+   - Launch the Electron desktop app.
+   - The Electron app will start the Dockerized MySQL, backend, and frontend stack.
+   - Once the UI is ready, it will appear directly in the desktop window (no external browser needed).
+
+### Option B: Manual setup (no Docker)
+
+#### 1. Database Setup
 
 Ensure your MySQL server is running. Create a database (default name `cmms_db`) or let the initialization script do it.
 
-### 2. Backend (Flask)
+#### 2. Backend (Flask)
 
 1. Navigate to the project root.
 2. Create and activate a Conda environment (recommended):
@@ -80,7 +109,7 @@ Ensure your MySQL server is running. Create a database (default name `cmms_db`) 
 
     The backend will start on `http://localhost:5000`.
 
-### 3. Frontend (Vite + React)
+#### 3. Frontend (Vite + React)
 
 1. Navigate to the `frontend` directory:
 
