@@ -190,8 +190,20 @@ def manage_profiles():
 
     cursor = conn.cursor(dictionary=True)
     try:
+        # Enforce Limits
+        job_role = data['job_role']
+        if job_role in ['Mid-level Manager', 'Base-level Worker']:
+            limit = 10 if job_role == 'Mid-level Manager' else 50
+            cursor.execute(
+                "SELECT COUNT(*) as count FROM Profile WHERE job_role = %s AND status = 'Current'",
+                (job_role,)
+            )
+            count = cursor.fetchone()['count']
+            if count >= limit:
+                return jsonify({"error": f"Limit reached for {job_role} (Max: {limit})"}), 400
+
         sql = "INSERT INTO Profile (personal_id, job_role, status) VALUES (%s, %s, %s)"
-        val = (data['personal_id'], data['job_role'],
+        val = (data['personal_id'], job_role,
                data.get('status', 'Current'))
         cursor.execute(sql, val)
         conn.commit()
@@ -285,13 +297,14 @@ def manage_locations():
     cursor = conn.cursor(dictionary=True)
     try:
         sql = (
-            "INSERT INTO Location (room, floor, building, campus, school_name) "
-            "VALUES (%s, %s, %s, %s, %s)"
+            "INSERT INTO Location (room, floor, building_name, type, campus, school_name) "
+            "VALUES (%s, %s, %s, %s, %s, %s)"
         )
         val = (
             data.get('room'),
             data.get('floor'),
-            data.get('building'),
+            data.get('building_name'),  # Changed from building
+            data.get('type'),          # New field
             data.get('campus'),
             data.get('school_name'),
         )
@@ -397,8 +410,9 @@ def manage_maintenance():
 
     cursor = conn.cursor(dictionary=True)
     try:
-        sql = "INSERT INTO Maintenance (type, frequency, location_id) VALUES (%s, %s, %s)"
-        val = (data['type'], data.get('frequency'), data['location_id'])
+        sql = "INSERT INTO Maintenance (type, frequency, location_id, chemical_used, contracted_company_id) VALUES (%s, %s, %s, %s, %s)"
+        val = (data['type'], data.get('frequency'), data['location_id'], data.get(
+            'chemical_used', False), data.get('contracted_company_id'))
         cursor.execute(sql, val)
         conn.commit()
         return jsonify({"message": "Maintenance task created"}), 201
@@ -408,11 +422,11 @@ def manage_maintenance():
     finally:
         cursor.close()
         conn.close()
-
-
 # --- Many-to-Many Relationship Endpoints ---
 
 # Participation (Person-Activity)
+
+
 @app.route('/api/participations', methods=['GET', 'POST'])
 def manage_participations():
     if request.method == 'GET':
@@ -652,6 +666,127 @@ def maintenance_frequency():
         report = cursor.fetchall()
         return jsonify(report), 200
     except mysql.connector.Error as e:
+        return jsonify({"error": str(e)}), 400
+    finally:
+        cursor.close()
+        conn.close()
+
+
+# --- New Endpoints for Buildings, Supervision ---
+
+# ExternalCompany Endpoints
+@app.route('/api/external-companies', methods=['GET', 'POST'])
+def manage_external_companies():
+    if request.method == 'GET':
+        conn, error_response = get_connection_or_response()
+        if error_response:
+            return error_response
+        cursor = conn.cursor(dictionary=True)
+        try:
+            cursor.execute("SELECT * FROM ExternalCompany")
+            return jsonify(cursor.fetchall()), 200
+        finally:
+            cursor.close()
+            conn.close()
+
+    data, error_response = parse_json(required_fields=['name'])
+    if error_response:
+        return error_response
+    conn, error_response = get_connection_or_response()
+    if error_response:
+        return error_response
+    cursor = conn.cursor(dictionary=True)
+    try:
+        cursor.execute("INSERT INTO ExternalCompany (name, contact_info) VALUES (%s, %s)",
+                       (data['name'], data.get('contact_info')))
+        conn.commit()
+        return jsonify({"message": "External Company created"}), 201
+    except mysql.connector.Error as e:
+        conn.rollback()
+        return jsonify({"error": str(e)}), 400
+    finally:
+        cursor.close()
+        conn.close()
+
+# Building Endpoints
+
+
+@app.route('/api/buildings', methods=['GET', 'POST'])
+def manage_buildings():
+    if request.method == 'GET':
+        conn, error_response = get_connection_or_response()
+        if error_response:
+            return error_response
+        cursor = conn.cursor(dictionary=True)
+        try:
+            cursor.execute("SELECT * FROM Building")
+            return jsonify(cursor.fetchall()), 200
+        finally:
+            cursor.close()
+            conn.close()
+
+    data, error_response = parse_json(required_fields=['building_name'])
+    if error_response:
+        return error_response
+    conn, error_response = get_connection_or_response()
+    if error_response:
+        return error_response
+    cursor = conn.cursor(dictionary=True)
+    try:
+        cursor.execute("INSERT INTO Building (building_name, campus) VALUES (%s, %s)",
+                       (data['building_name'], data.get('campus')))
+        conn.commit()
+        return jsonify({"message": "Building created"}), 201
+    except mysql.connector.Error as e:
+        conn.rollback()
+        return jsonify({"error": str(e)}), 400
+    finally:
+        cursor.close()
+        conn.close()
+
+# Building Supervision Endpoints
+
+
+@app.route('/api/building-supervision', methods=['GET', 'POST'])
+def manage_building_supervision():
+    if request.method == 'GET':
+        conn, error_response = get_connection_or_response()
+        if error_response:
+            return error_response
+        cursor = conn.cursor(dictionary=True)
+        try:
+            cursor.execute("""
+                SELECT bs.*, p.name as supervisor_name
+                FROM BuildingSupervision bs
+                JOIN Person p ON bs.supervisor_id = p.personal_id
+            """)
+            return jsonify(cursor.fetchall()), 200
+        finally:
+            cursor.close()
+            conn.close()
+
+    data, error_response = parse_json(
+        required_fields=['supervisor_id', 'building_name'])
+    if error_response:
+        return error_response
+    conn, error_response = get_connection_or_response()
+    if error_response:
+        return error_response
+    cursor = conn.cursor(dictionary=True)
+    try:
+        # Verify supervisor is a Mid-level Manager
+        cursor.execute(
+            "SELECT job_role FROM Profile WHERE personal_id = %s", (data['supervisor_id'],))
+        profile = cursor.fetchone()
+        if not profile or profile['job_role'] != 'Mid-level Manager':
+            return jsonify({"error": "Supervisor must be a Mid-level Manager"}), 400
+
+        cursor.execute("INSERT INTO BuildingSupervision (supervisor_id, building_name) VALUES (%s, %s)",
+                       (data['supervisor_id'], data['building_name']))
+        conn.commit()
+        return jsonify({"message": "Supervision assigned"}), 201
+    except mysql.connector.Error as e:
+        conn.rollback()
         return jsonify({"error": str(e)}), 400
     finally:
         cursor.close()
