@@ -2,6 +2,12 @@
 
 ## Prerequisites
 
+### For quick start (recommended)
+
+- Docker Desktop (Windows/macOS) with Docker Compose v2 (the `docker compose` command)
+
+### For manual setup (no Docker)
+
 - Python 3.8+
 - Conda (e.g. Miniconda/Anaconda or Mambaforge)
 - (Optional) [uv](https://github.com/astral-sh/uv) for fast Python package & virtual env management
@@ -10,11 +16,33 @@
 
 ## Setup & Running
 
-### 1. Database Setup
+### Option A: Quick start with Docker (recommended)
+
+1. Ensure Docker Desktop is installed and running.
+2. From the project root, run (macOS/Linux):
+
+    ```bash
+    ./run.sh
+    ```
+
+   Or from Windows PowerShell:
+
+    ```powershell
+    .\run.ps1
+    ```
+
+3. The script will:
+   - Build and start the MySQL, backend, and frontend containers.
+   - Wait for the frontend to become available.
+   - Open your default browser to `http://localhost:5173`.
+
+### Option B: Manual setup (no Docker)
+
+#### 1. Database Setup
 
 Ensure your MySQL server is running. Create a database (default name `cmms_db`) or let the initialization script do it.
 
-### 2. Backend (Flask)
+#### 2. Backend (Flask)
 
 1. Navigate to the project root.
 2. Create and activate a Conda environment (recommended):
@@ -80,7 +108,7 @@ Ensure your MySQL server is running. Create a database (default name `cmms_db`) 
 
     The backend will start on `http://localhost:5000`.
 
-### 3. Frontend (Vite + React)
+#### 3. Frontend (Vite + React)
 
 1. Navigate to the `frontend` directory:
 
