@@ -5,6 +5,7 @@
 ### For quick start (recommended)
 
 - Docker Desktop (Windows/macOS) with Docker Compose v2 (the `docker compose` command)
+- Node.js (with npm) for running the Electron desktop app
 
 ### For manual setup (no Docker)
 
@@ -34,6 +35,7 @@
 
 4. The script will:
    - Launch the Electron desktop app.
+   - On first run, install the Node/Electron dependencies in the `desktop/` folder.
    - The Electron app will start the Dockerized MySQL, backend, and frontend stack.
    - Once the UI is ready, it will appear directly in the desktop window (no external browser needed).
 
@@ -129,7 +131,12 @@ Ensure your MySQL server is running. Create a database (default name `cmms_db`) 
     npm run dev
     ```
 
-    The frontend will start on `http://localhost:5173` (usually).
+     The frontend will start on `http://localhost:5173` (usually).
+
+     > **Note:** In the Docker/Electron setup, the React app is configured to talk to the backend at
+     > `http://localhost:5050/api`. If you run the backend manually on port `5000` instead, update the
+     > `API_URL` constant in `frontend/src/App.jsx` to `http://localhost:5000/api` so the frontend can
+     > reach your manually started backend.
 
 ## Project Structure
 
