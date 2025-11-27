@@ -1,9 +1,26 @@
 import mysql.connector
 from mysql.connector import Error
 import os
+from pathlib import Path
 from dotenv import load_dotenv
 
-load_dotenv()
+
+# Load environment variables from a .env file, if present.
+# Prefer backend/.env, but also support a project-root .env when run from there.
+BASE_DIR = Path(__file__).resolve().parent
+ENV_PATHS = [BASE_DIR / '.env', BASE_DIR.parent / '.env']
+
+for env_path in ENV_PATHS:
+    if env_path.exists():
+        load_dotenv(dotenv_path=env_path)
+        break
+else:
+    # No .env found; fall back to hard-coded defaults and guide the user.
+    print(
+        "[db.py] Warning: .env file not found in 'backend/' or project root. "
+        "Using default DB settings (localhost/root/cmms_db). "
+        "Create backend/.env with DB_HOST, DB_USER, DB_PASSWORD, DB_NAME to configure."
+    )
 
 
 def get_db_connection():
@@ -43,7 +60,8 @@ def init_db():
 
     if conn:
         cursor = conn.cursor()
-        with open('backend/schema.sql', 'r') as f:
+        schema_path = BASE_DIR / 'schema.sql'
+        with open(schema_path, 'r') as f:
             schema = f.read()
             # Split by semicolon to execute multiple statements
             statements = schema.split(';')
