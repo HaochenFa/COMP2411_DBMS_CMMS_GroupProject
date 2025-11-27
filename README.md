@@ -16,10 +16,11 @@
 
 ## Setup & Running
 
-### Option A: Quick start with Docker (recommended)
+### Option A: Desktop app (Electron + Docker, recommended)
 
 1. Ensure Docker Desktop is installed and running.
-2. From the project root, run (macOS/Linux):
+2. Ensure Node.js (with npm) is installed from <https://nodejs.org/>.
+3. From the project root, run (macOS/Linux):
 
     ```bash
     ./run.sh
@@ -31,10 +32,10 @@
     .\run.ps1
     ```
 
-3. The script will:
-   - Build and start the MySQL, backend, and frontend containers.
-   - Wait for the frontend to become available.
-   - Open your default browser to `http://localhost:5173`.
+4. The script will:
+   - Launch the Electron desktop app.
+   - The Electron app will start the Dockerized MySQL, backend, and frontend stack.
+   - Once the UI is ready, it will appear directly in the desktop window (no external browser needed).
 
 ### Option B: Manual setup (no Docker)
 
