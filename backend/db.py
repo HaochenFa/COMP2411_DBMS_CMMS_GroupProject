@@ -37,8 +37,39 @@ def get_db_connection():
         return None
 
 
+def is_db_initialized() -> bool:
+    """Check whether the core application tables already exist.
+
+    This is a *non-destructive* check used on startup to decide whether the
+    schema needs to be initialized. If the connection fails or the check
+    errors, it returns False.
+    """
+
+    conn = get_db_connection()
+    if not conn:
+        return False
+
+    cursor = conn.cursor()
+    try:
+        # Use one core table as a representative check.
+        cursor.execute("SHOW TABLES LIKE 'Person'")
+        return cursor.fetchone() is not None
+    except Error as e:
+        print(f"Error checking database initialization: {e}")
+        return False
+    finally:
+        cursor.close()
+        conn.close()
+
+
 def init_db():
-    """Initializes the database with the schema."""
+    """Initializes the database with the schema in ``schema.sql``.
+
+    WARNING: This function will execute all statements in ``backend/schema.sql``,
+    including ``DROP TABLE IF EXISTS ...``. It is **destructive** and should be
+    used only for initial setup or when you explicitly want to reset the
+    database.
+    """
     conn = get_db_connection()
     if conn is None:
         # Try connecting without database to create it
@@ -76,7 +107,3 @@ def init_db():
         cursor.close()
         conn.close()
         print("Database initialized successfully.")
-
-
-if __name__ == '__main__':
-    init_db()

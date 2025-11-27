@@ -1,13 +1,35 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from db import get_db_connection, init_db
+from db import get_db_connection, init_db, is_db_initialized
 import mysql.connector
 
 app = Flask(__name__)
 CORS(app)
 
-# Initialize DB on start (optional, or run db.py manually)
-# init_db()
+
+def ensure_db_initialized_on_startup():
+    """Optionally initialize the database schema on first run.
+
+    This checks whether the core tables exist. If they do not, it will run the
+    **destructive** ``init_db()`` function from ``db.py``, which executes
+    ``backend/schema.sql`` (including ``DROP TABLE IF EXISTS ...``).
+
+    Normal runs where the schema already exists will **not** modify data.
+    """
+
+    try:
+        if is_db_initialized():
+            app.logger.info(
+                "Database already initialized; starting without changes.")
+            return
+    except Exception as exc:  # Defensive: don't block startup on the check itself
+        app.logger.warning(f"Could not verify database initialization: {exc}")
+
+    app.logger.warning(
+        "Database appears uninitialized or check failed. "
+        "Running destructive init_db() using backend/schema.sql."
+    )
+    init_db()
 
 
 def parse_json(required_fields=None):
@@ -637,4 +659,7 @@ def maintenance_frequency():
 
 
 if __name__ == '__main__':
+    # Optionally initialize the DB on first run. This will only call the
+    # destructive init_db() if the core tables are missing.
+    ensure_db_initialized_on_startup()
     app.run(debug=True, port=5000)
