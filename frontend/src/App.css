@@ -160,7 +160,7 @@ h3 {
 /* Cards */
 .card-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr); /* Force 3 columns for compactness */
+  grid-template-columns: repeat(2, 1fr); /* 2 columns for balanced layout */
   gap: 15px;
 }
 
@@ -179,13 +179,18 @@ h3 {
   grid-column: span 2;
 }
 
+.card.full-row {
+  grid-column: 1 / -1;
+}
+
 /* If screen is small, adjust */
-@media (max-width: 1200px) {
+@media (max-width: 900px) {
   .card-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 1fr;
   }
-  .card.full-width {
-    grid-column: 1 / -1;
+  .card.full-width,
+  .card.full-row {
+    grid-column: 1;
   }
 }
 
