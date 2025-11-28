@@ -30,7 +30,7 @@ Set-Location ..
 Write-Host "💻 Launching Frontend..." -ForegroundColor Green
 Set-Location frontend
 npm install | Out-Null
-Start-Process -FilePath "npm" -ArgumentList "run dev" -NoNewWindow
+Start-Process -FilePath "npm.cmd" -ArgumentList "run dev" -NoNewWindow
 Set-Location ..
 
 # 3. Start Desktop
