@@ -121,7 +121,12 @@ def manage_persons():
 
         cursor = conn.cursor(dictionary=True)
         try:
-            cursor.execute("SELECT * FROM Person")
+            # Calculate age dynamically from date_of_birth
+            cursor.execute("""
+                SELECT personal_id, name, gender, date_of_birth, entry_date, supervisor_id,
+                       TIMESTAMPDIFF(YEAR, date_of_birth, CURDATE()) AS age
+                FROM Person
+            """)
             persons = cursor.fetchall()
             return jsonify(persons), 200
         except mysql.connector.Error as e:
@@ -142,13 +147,12 @@ def manage_persons():
     cursor = conn.cursor(dictionary=True)
     try:
         sql = (
-            "INSERT INTO Person (personal_id, name, age, gender, date_of_birth, supervisor_id) "
-            "VALUES (%s, %s, %s, %s, %s, %s)"
+            "INSERT INTO Person (personal_id, name, gender, date_of_birth, supervisor_id) "
+            "VALUES (%s, %s, %s, %s, %s)"
         )
         val = (
             data['personal_id'],
             data['name'],
-            data.get('age'),
             data.get('gender'),
             data.get('date_of_birth'),
             data.get('supervisor_id'),
@@ -198,15 +202,12 @@ def manage_person_item(id):
         return error_response
 
     try:
-        # Dynamic update query
+        # Dynamic update query (age is calculated, not stored)
         fields = []
         values = []
         if 'name' in data:
             fields.append("name = %s")
             values.append(data['name'])
-        if 'age' in data:
-            fields.append("age = %s")
-            values.append(data['age'])
         if 'gender' in data:
             fields.append("gender = %s")
             values.append(data['gender'])
@@ -310,10 +311,9 @@ def manage_schools():
         try:
             # Only show legitimate schools (those with a faculty assigned)
             cursor.execute("""
-                SELECT s.*, l.building, l.room
-                FROM School s
-                LEFT JOIN Location l ON s.hq_location_id = l.location_id
-                WHERE s.faculty IS NOT NULL
+                SELECT school_name, department, faculty, hq_building
+                FROM School
+                WHERE faculty IS NOT NULL
             """)
             schools = cursor.fetchall()
             return jsonify(schools), 200
@@ -335,12 +335,71 @@ def manage_schools():
 
     cursor = conn.cursor(dictionary=True)
     try:
-        sql = "INSERT INTO School (school_name, department, faculty, hq_location_id) VALUES (%s, %s, %s, %s)"
+        sql = "INSERT INTO School (school_name, department, faculty, hq_building) VALUES (%s, %s, %s, %s)"
         val = (data['school_name'], data['department'],
-               data.get('faculty'), data.get('hq_location_id'))
+               data.get('faculty'), data.get('hq_building'))
         cursor.execute(sql, val)
         conn.commit()
         return jsonify({"message": "School created"}), 201
+    except mysql.connector.Error as e:
+        conn.rollback()
+        return jsonify({"error": str(e)}), 400
+    finally:
+        cursor.close()
+        conn.close()
+
+
+@app.route('/api/schools/<id>', methods=['PUT', 'DELETE'])
+def manage_school_item(id):
+    conn, error_response = get_connection_or_response()
+    if error_response:
+        return error_response
+    cursor = conn.cursor(dictionary=True)
+
+    if request.method == 'DELETE':
+        try:
+            # Delete related affiliations first
+            cursor.execute(
+                "DELETE FROM Affiliation WHERE school_name = %s", (id,))
+            # Set school_name to NULL for related locations
+            cursor.execute(
+                "UPDATE Location SET school_name = NULL WHERE school_name = %s", (id,))
+            # Delete the school
+            cursor.execute("DELETE FROM School WHERE school_name = %s", (id,))
+            conn.commit()
+            if cursor.rowcount == 0:
+                return jsonify({"error": "School not found"}), 404
+            return jsonify({"message": "School deleted"}), 200
+        except mysql.connector.Error as e:
+            conn.rollback()
+            return jsonify({"error": str(e)}), 400
+        finally:
+            cursor.close()
+            conn.close()
+
+    # PUT
+    data, error_response = parse_json()
+    if error_response:
+        return error_response
+
+    try:
+        fields = []
+        values = []
+        for key in ['department', 'faculty', 'hq_building']:
+            if key in data:
+                fields.append(f"{key} = %s")
+                values.append(data[key])
+
+        if not fields:
+            return jsonify({"error": "No fields to update"}), 400
+
+        values.append(id)
+        sql = f"UPDATE School SET {', '.join(fields)} WHERE school_name = %s"
+        cursor.execute(sql, tuple(values))
+        conn.commit()
+        if cursor.rowcount == 0:
+            return jsonify({"error": "School not found"}), 404
+        return jsonify({"message": "School updated"}), 200
     except mysql.connector.Error as e:
         conn.rollback()
         return jsonify({"error": str(e)}), 400
@@ -999,9 +1058,9 @@ def bulk_import():
 
     try:
         if entity == 'persons':
-            sql = "INSERT INTO Person (personal_id, name, age, gender, date_of_birth, supervisor_id) VALUES (%s, %s, %s, %s, %s, %s)"
+            sql = "INSERT INTO Person (personal_id, name, gender, date_of_birth, supervisor_id) VALUES (%s, %s, %s, %s, %s)"
             for item in items:
-                val = (item.get('personal_id'), item.get('name'), item.get('age'), item.get(
+                val = (item.get('personal_id'), item.get('name'), item.get(
                     'gender'), item.get('date_of_birth'), item.get('supervisor_id'))
                 cursor.execute(sql, val)
         elif entity == 'locations':

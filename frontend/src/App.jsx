@@ -28,12 +28,24 @@ function App() {
                   { key: "name", label: "Name" },
                   { key: "age", label: "Age" },
                   { key: "gender", label: "Gender" },
+                  {
+                    key: "entry_date",
+                    label: "Entry Date",
+                    render: (value) =>
+                      value
+                        ? new Date(value).toLocaleDateString("en-HK", {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                            timeZone: "Asia/Hong_Kong",
+                          })
+                        : "-",
+                  },
                   { key: "supervisor_id", label: "Supervisor" },
                 ]}
                 createFields={[
                   { name: "personal_id", label: "Personal ID", required: true },
                   { name: "name", label: "Name", required: true },
-                  { name: "age", label: "Age", type: "number" },
                   {
                     name: "gender",
                     label: "Gender",
@@ -58,14 +70,13 @@ function App() {
                   { key: "school_name", label: "School Name" },
                   { key: "department", label: "Department" },
                   { key: "faculty", label: "Faculty" },
-                  { key: "building", label: "HQ Building" },
-                  { key: "room", label: "HQ Room" },
+                  { key: "hq_building", label: "HQ Building" },
                 ]}
                 createFields={[
                   { name: "school_name", label: "School Name", required: true },
                   { name: "department", label: "Department", required: true },
                   { name: "faculty", label: "Faculty" },
-                  { name: "hq_location_id", label: "HQ Location ID" },
+                  { name: "hq_building", label: "HQ Building" },
                 ]}
               />
             }
@@ -81,7 +92,21 @@ function App() {
                 columns={[
                   { key: "activity_id", label: "ID" },
                   { key: "type", label: "Type" },
-                  { key: "time", label: "Time" },
+                  {
+                    key: "time",
+                    label: "Time",
+                    render: (value) =>
+                      value
+                        ? new Date(value).toLocaleString("en-HK", {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            timeZone: "Asia/Hong_Kong",
+                          })
+                        : "-",
+                  },
                   { key: "organiser_name", label: "Organiser" },
                   { key: "building", label: "Building" },
                   { key: "room", label: "Room" },
@@ -92,7 +117,26 @@ function App() {
                   { name: "type", label: "Type" },
                   { name: "time", label: "Time", type: "datetime-local" },
                   { name: "organiser_id", label: "Organiser ID", required: true },
-                  { name: "location_id", label: "Location ID" },
+                  {
+                    name: "building",
+                    label: "Building",
+                    type: "cascading-select",
+                    optionsEndpoint: "locations",
+                    optionValue: "building",
+                    optionLabel: (loc) => loc.building,
+                    unique: true,
+                  },
+                  {
+                    name: "room",
+                    label: "Room",
+                    type: "cascading-select",
+                    optionsEndpoint: "locations",
+                    dependsOn: "building",
+                    filterBy: "building",
+                    optionValue: "room",
+                    optionLabel: (loc) => `Room ${loc.room} (Floor ${loc.floor})`,
+                    resolveTo: { field: "location_id", key: "location_id" },
+                  },
                 ]}
               />
             }
@@ -118,8 +162,34 @@ function App() {
                 ]}
                 createFields={[
                   { name: "type", label: "Type", required: true },
-                  { name: "frequency", label: "Frequency" },
-                  { name: "location_id", label: "Location ID", required: true },
+                  {
+                    name: "frequency",
+                    label: "Frequency",
+                    type: "select",
+                    options: ["Daily", "Weekly", "Monthly", "Yearly", "One-off"],
+                  },
+                  {
+                    name: "building",
+                    label: "Building",
+                    type: "cascading-select",
+                    required: true,
+                    optionsEndpoint: "locations",
+                    optionValue: "building",
+                    optionLabel: (loc) => loc.building,
+                    unique: true,
+                  },
+                  {
+                    name: "room",
+                    label: "Room",
+                    type: "cascading-select",
+                    required: true,
+                    optionsEndpoint: "locations",
+                    dependsOn: "building",
+                    filterBy: "building",
+                    optionValue: "room",
+                    optionLabel: (loc) => `Room ${loc.room} (Floor ${loc.floor})`,
+                    resolveTo: { field: "location_id", key: "location_id" },
+                  },
                   {
                     name: "active_chemical",
                     label: "Active Chemical",

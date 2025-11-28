@@ -13,6 +13,7 @@ export default function EntityManager({ title, endpoint, columns, idField, creat
   const [error, setError] = useState(null);
   const [importFile, setImportFile] = useState(null);
   const [isImporting, setIsImporting] = useState(false);
+  const [dynamicOptions, setDynamicOptions] = useState({});
 
   const fetchItems = useCallback(async () => {
     try {
@@ -24,9 +25,57 @@ export default function EntityManager({ title, endpoint, columns, idField, creat
     }
   }, [endpoint]);
 
+  // Store raw data for cascading selects
+  const [rawOptionsData, setRawOptionsData] = useState({});
+
+  // Fetch dynamic options for select fields that have optionsEndpoint
+  const fetchDynamicOptions = useCallback(async () => {
+    const fieldsWithEndpoint = createFields.filter((f) => f.optionsEndpoint);
+    const optionsMap = {};
+    const rawDataMap = {};
+
+    // Group fields by endpoint to avoid duplicate fetches
+    const endpointFields = {};
+    for (const field of fieldsWithEndpoint) {
+      if (!endpointFields[field.optionsEndpoint]) {
+        endpointFields[field.optionsEndpoint] = [];
+      }
+      endpointFields[field.optionsEndpoint].push(field);
+    }
+
+    for (const [endpointName, fields] of Object.entries(endpointFields)) {
+      try {
+        const res = await axios.get(`${API_URL}/${endpointName}`);
+        rawDataMap[endpointName] = res.data;
+
+        for (const field of fields) {
+          if (field.type === "cascading-select" && field.unique) {
+            // Get unique values for this field
+            const uniqueValues = [...new Set(res.data.map((item) => item[field.optionValue]))];
+            optionsMap[field.name] = uniqueValues.map((val) => ({
+              value: val,
+              label: field.optionLabel({ [field.optionValue]: val, building: val }),
+            }));
+          } else if (field.type !== "cascading-select" || !field.dependsOn) {
+            optionsMap[field.name] = res.data.map((item) => ({
+              value: item[field.optionValue],
+              label: field.optionLabel(item),
+            }));
+          }
+        }
+      } catch (err) {
+        console.error(`Failed to fetch options for ${endpointName}:`, err);
+      }
+    }
+
+    setRawOptionsData(rawDataMap);
+    setDynamicOptions(optionsMap);
+  }, [createFields]);
+
   useEffect(() => {
     fetchItems();
-  }, [fetchItems]);
+    fetchDynamicOptions();
+  }, [fetchItems, fetchDynamicOptions]);
 
   const handleCreate = async (e) => {
     e.preventDefault();
@@ -174,22 +223,99 @@ export default function EntityManager({ title, endpoint, columns, idField, creat
 
       {isCreating && (
         <form onSubmit={handleCreate} className="data-form">
-          {createFields.map((field) => (
-            <div key={field.name} style={{ flex: "1 1 200px" }}>
-              {field.type === "select" ? (
-                <select
-                  value={newItem[field.name] || ""}
-                  onChange={(e) => setNewItem({ ...newItem, [field.name]: e.target.value })}
-                  required={field.required}
-                >
-                  <option value="">Select {field.label}</option>
-                  {field.options.map((opt) => (
-                    <option key={opt} value={opt}>
-                      {opt}
-                    </option>
-                  ))}
-                </select>
-              ) : (
+          {createFields.map((field) => {
+            // Handle cascading select (e.g., Building -> Room)
+            if (field.type === "cascading-select") {
+              let options = [];
+              if (field.dependsOn) {
+                // This is a dependent field - filter based on parent value
+                const parentValue = newItem[field.dependsOn];
+                const rawData = rawOptionsData[field.optionsEndpoint] || [];
+                const filtered = parentValue
+                  ? rawData.filter((item) => item[field.filterBy] === parentValue)
+                  : [];
+                options = filtered.map((item) => ({
+                  value: item[field.optionValue],
+                  label: field.optionLabel(item),
+                  _raw: item,
+                }));
+              } else {
+                // This is a parent field - use pre-computed unique options
+                options = dynamicOptions[field.name] || [];
+              }
+
+              return (
+                <div key={field.name} style={{ flex: "1 1 200px" }}>
+                  <select
+                    value={newItem[field.name] || ""}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      const updates = { ...newItem, [field.name]: val };
+
+                      // If this is a dependent field with resolveTo, also set the resolved field
+                      if (field.resolveTo && val) {
+                        const selectedOpt = options.find((o) => String(o.value) === val);
+                        if (selectedOpt?._raw) {
+                          updates[field.resolveTo.field] = selectedOpt._raw[field.resolveTo.key];
+                        }
+                      }
+
+                      // If this is a parent field, clear dependent fields
+                      if (!field.dependsOn) {
+                        const dependentFields = createFields.filter(
+                          (f) => f.dependsOn === field.name
+                        );
+                        dependentFields.forEach((df) => {
+                          updates[df.name] = "";
+                          if (df.resolveTo) updates[df.resolveTo.field] = "";
+                        });
+                      }
+
+                      setNewItem(updates);
+                    }}
+                    required={field.required}
+                    disabled={field.dependsOn && !newItem[field.dependsOn]}
+                  >
+                    <option value="">Select {field.label}</option>
+                    {options.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              );
+            }
+
+            // Regular select
+            if (field.type === "select") {
+              return (
+                <div key={field.name} style={{ flex: "1 1 200px" }}>
+                  <select
+                    value={newItem[field.name] || ""}
+                    onChange={(e) => setNewItem({ ...newItem, [field.name]: e.target.value })}
+                    required={field.required}
+                  >
+                    <option value="">Select {field.label}</option>
+                    {field.options
+                      ? field.options.map((opt) => (
+                          <option key={opt} value={opt === "Yes" ? 1 : opt === "No" ? 0 : opt}>
+                            {opt}
+                          </option>
+                        ))
+                      : (dynamicOptions[field.name] || []).map((opt) => (
+                          <option key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </option>
+                        ))}
+                  </select>
+                </div>
+              );
+            }
+
+            // Regular input
+            return (
+              <div key={field.name} style={{ flex: "1 1 200px" }}>
                 <input
                   type={field.type || "text"}
                   placeholder={field.label}
@@ -197,9 +323,9 @@ export default function EntityManager({ title, endpoint, columns, idField, creat
                   onChange={(e) => setNewItem({ ...newItem, [field.name]: e.target.value })}
                   required={field.required}
                 />
-              )}
-            </div>
-          ))}
+              </div>
+            );
+          })}
           <button type="submit" style={{ flex: "0 0 auto" }}>
             <Save size={16} /> Save
           </button>
@@ -222,15 +348,40 @@ export default function EntityManager({ title, endpoint, columns, idField, creat
                 {columns.map((col) => {
                   const rawValue = item[col.key];
                   const displayValue = col.render ? col.render(rawValue, item) : rawValue;
+                  // Find matching createField for this column to get field type/options
+                  const fieldConfig = createFields.find((f) => f.name === col.key);
+                  // Get options: either static options or dynamic options from API
+                  const selectOptions = fieldConfig?.optionsEndpoint
+                    ? dynamicOptions[fieldConfig.name] || []
+                    : (fieldConfig?.options || []).map((opt) => ({
+                        value: opt === "Yes" ? 1 : opt === "No" ? 0 : opt,
+                        label: opt,
+                      }));
                   return (
                     <td key={col.key}>
                       {editingId === item[idField] ? (
-                        <input
-                          value={editFormData[col.key] || ""}
-                          onChange={(e) =>
-                            setEditFormData({ ...editFormData, [col.key]: e.target.value })
-                          }
-                        />
+                        fieldConfig?.type === "select" ? (
+                          <select
+                            value={editFormData[col.key] ?? ""}
+                            onChange={(e) =>
+                              setEditFormData({ ...editFormData, [col.key]: e.target.value })
+                            }
+                          >
+                            <option value="">Select...</option>
+                            {selectOptions.map((opt) => (
+                              <option key={opt.value} value={opt.value}>
+                                {opt.label}
+                              </option>
+                            ))}
+                          </select>
+                        ) : (
+                          <input
+                            value={editFormData[col.key] || ""}
+                            onChange={(e) =>
+                              setEditFormData({ ...editFormData, [col.key]: e.target.value })
+                            }
+                          />
+                        )
                       ) : (
                         displayValue
                       )}
