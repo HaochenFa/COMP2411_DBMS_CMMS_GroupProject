@@ -13,7 +13,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the backend application code
 COPY . .
 
-EXPOSE 5000
+EXPOSE 5050
 
 # Wait for the MySQL database to be ready, then start the Flask app
 CMD ["sh", "-c", "python wait_for_db.py && python app.py"]

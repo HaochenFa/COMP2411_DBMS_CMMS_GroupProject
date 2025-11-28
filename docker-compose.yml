@@ -25,7 +25,7 @@ services:
     depends_on:
       - db
     ports:
-      - "5050:5000"
+      - "5050:5050"
 
   frontend:
     build:
