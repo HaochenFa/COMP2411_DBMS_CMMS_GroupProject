@@ -1,4 +1,7 @@
 -- Schema for Campus Maintenance and Management System
+SET
+    FOREIGN_KEY_CHECKS = 0;
+
 DROP TABLE IF EXISTS Maintenance;
 
 DROP TABLE IF EXISTS Participation;
@@ -17,13 +20,16 @@ DROP TABLE IF EXISTS Profile;
 
 DROP TABLE IF EXISTS Person;
 
+SET
+    FOREIGN_KEY_CHECKS = 1;
+
 CREATE TABLE
     Person (
         personal_id VARCHAR(20) PRIMARY KEY,
         name VARCHAR(100) NOT NULL,
-        age INT,
         gender VARCHAR(10),
         date_of_birth DATE,
+        entry_date DATE DEFAULT (CURRENT_DATE),
         supervisor_id VARCHAR(20),
         FOREIGN KEY (supervisor_id) REFERENCES Person (personal_id)
     );
@@ -43,7 +49,7 @@ CREATE TABLE
         school_name VARCHAR(100) PRIMARY KEY,
         department VARCHAR(100) NOT NULL UNIQUE,
         faculty VARCHAR(100),
-        hq_location_id INT -- [NEW] Link to HQ Location (FK added later)
+        hq_building VARCHAR(100) -- Building name for school headquarters
     );
 
 -- [NEW] External Company for contracting
@@ -109,5 +115,4 @@ CREATE TABLE
         FOREIGN KEY (school_name) REFERENCES School (school_name)
     );
 
--- [AFTER-CREATE] Add circular FK
-ALTER TABLE School ADD FOREIGN KEY (hq_location_id) REFERENCES Location (location_id);
+-- Note: hq_building is now a simple VARCHAR, no FK needed
