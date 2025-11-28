@@ -4,6 +4,7 @@ import Layout from './components/Layout';
 import Dashboard from './components/Dashboard';
 import EntityManager from './components/EntityManager';
 import RelationshipManager from './components/RelationshipManager';
+import SafetySearch from './components/SafetySearch';
 import './App.css';
 
 function App() {
@@ -12,6 +13,7 @@ function App() {
       <Layout>
         <Routes>
           <Route path="/" element={<Dashboard />} />
+          <Route path="/safety-search" element={<SafetySearch />} />
           
           <Route path="/persons" element={
             <EntityManager 
@@ -44,12 +46,15 @@ function App() {
               columns={[
                 { key: 'school_name', label: 'School Name' },
                 { key: 'department', label: 'Department' },
-                { key: 'faculty', label: 'Faculty' }
+                { key: 'faculty', label: 'Faculty' },
+                { key: 'building', label: 'HQ Building' },
+                { key: 'room', label: 'HQ Room' }
               ]}
               createFields={[
                 { name: 'school_name', label: 'School Name', required: true },
                 { name: 'department', label: 'Department', required: true },
-                { name: 'faculty', label: 'Faculty' }
+                { name: 'faculty', label: 'Faculty' },
+                { name: 'hq_location_id', label: 'HQ Location ID' }
               ]}
             />
           } />
@@ -85,13 +90,17 @@ function App() {
                 { key: 'activity_id', label: 'ID' },
                 { key: 'type', label: 'Type' },
                 { key: 'time', label: 'Time' },
-                { key: 'organiser_name', label: 'Organiser' }
+                { key: 'organiser_name', label: 'Organiser' },
+                { key: 'building', label: 'Building' },
+                { key: 'room', label: 'Room' },
+                { key: 'floor', label: 'Floor' }
               ]}
               createFields={[
                 { name: 'activity_id', label: 'Activity ID', required: true },
                 { name: 'type', label: 'Type' },
                 { name: 'time', label: 'Time', type: 'datetime-local' },
-                { name: 'organiser_id', label: 'Organiser ID', required: true }
+                { name: 'organiser_id', label: 'Organiser ID', required: true },
+                { name: 'location_id', label: 'Location ID' }
               ]}
             />
           } />
@@ -105,12 +114,14 @@ function App() {
                 { key: 'type', label: 'Type' },
                 { key: 'frequency', label: 'Frequency' },
                 { key: 'building', label: 'Building' },
-                { key: 'room', label: 'Room' }
+                { key: 'room', label: 'Room' },
+                { key: 'active_chemical', label: 'Active Chemical' }
               ]}
               createFields={[
                 { name: 'type', label: 'Type', required: true },
                 { name: 'frequency', label: 'Frequency' },
-                { name: 'location_id', label: 'Location ID', required: true }
+                { name: 'location_id', label: 'Location ID', required: true },
+                { name: 'active_chemical', label: 'Active Chemical', type: 'select', options: ['Yes', 'No'] }
               ]}
             />
           } />
@@ -125,7 +136,10 @@ function App() {
               ]}
               displayColumns={[
                 { key: 'person_name', label: 'Person' },
-                { key: 'activity_type', label: 'Activity' }
+                { key: 'activity_type', label: 'Activity' },
+                { key: 'activity_time', label: 'Time' },
+                { key: 'building', label: 'Building' },
+                { key: 'room', label: 'Room' }
               ]}
             />
           } />

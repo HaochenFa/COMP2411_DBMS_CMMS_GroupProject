@@ -153,6 +153,79 @@ def manage_persons():
         conn.close()
 
 
+@app.route('/api/persons/<id>', methods=['PUT', 'DELETE'])
+def manage_person_item(id):
+    conn, error_response = get_connection_or_response()
+    if error_response:
+        return error_response
+    cursor = conn.cursor(dictionary=True)
+
+    if request.method == 'DELETE':
+        try:
+            # First delete dependencies (Participation, Affiliation, Profile, BuildingSupervision)
+            cursor.execute(
+                "DELETE FROM Participation WHERE personal_id = %s", (id,))
+            cursor.execute(
+                "DELETE FROM Affiliation WHERE personal_id = %s", (id,))
+            cursor.execute("DELETE FROM Profile WHERE personal_id = %s", (id,))
+            cursor.execute(
+                "DELETE FROM BuildingSupervision WHERE supervisor_id = %s", (id,))
+            # Then delete Person
+            cursor.execute("DELETE FROM Person WHERE personal_id = %s", (id,))
+            conn.commit()
+            if cursor.rowcount == 0:
+                return jsonify({"error": "Person not found"}), 404
+            return jsonify({"message": "Person deleted"}), 200
+        except mysql.connector.Error as e:
+            conn.rollback()
+            return jsonify({"error": str(e)}), 400
+        finally:
+            cursor.close()
+            conn.close()
+
+    # PUT
+    data, error_response = parse_json()
+    if error_response:
+        return error_response
+
+    try:
+        # Dynamic update query
+        fields = []
+        values = []
+        if 'name' in data:
+            fields.append("name = %s")
+            values.append(data['name'])
+        if 'age' in data:
+            fields.append("age = %s")
+            values.append(data['age'])
+        if 'gender' in data:
+            fields.append("gender = %s")
+            values.append(data['gender'])
+        if 'date_of_birth' in data:
+            fields.append("date_of_birth = %s")
+            values.append(data['date_of_birth'])
+        if 'supervisor_id' in data:
+            fields.append("supervisor_id = %s")
+            values.append(data['supervisor_id'])
+
+        if not fields:
+            return jsonify({"error": "No fields to update"}), 400
+
+        values.append(id)
+        sql = f"UPDATE Person SET {', '.join(fields)} WHERE personal_id = %s"
+        cursor.execute(sql, tuple(values))
+        conn.commit()
+        if cursor.rowcount == 0:
+            return jsonify({"error": "Person not found"}), 404
+        return jsonify({"message": "Person updated"}), 200
+    except mysql.connector.Error as e:
+        conn.rollback()
+        return jsonify({"error": str(e)}), 400
+    finally:
+        cursor.close()
+        conn.close()
+
+
 # --- Profile Endpoints ---
 @app.route('/api/profiles', methods=['GET', 'POST'])
 def manage_profiles():
@@ -226,7 +299,11 @@ def manage_schools():
 
         cursor = conn.cursor(dictionary=True)
         try:
-            cursor.execute("SELECT * FROM School")
+            cursor.execute("""
+                SELECT s.*, l.building, l.room
+                FROM School s
+                LEFT JOIN Location l ON s.hq_location_id = l.location_id
+            """)
             schools = cursor.fetchall()
             return jsonify(schools), 200
         except mysql.connector.Error as e:
@@ -247,8 +324,9 @@ def manage_schools():
 
     cursor = conn.cursor(dictionary=True)
     try:
-        sql = "INSERT INTO School (school_name, department, faculty) VALUES (%s, %s, %s)"
-        val = (data['school_name'], data['department'], data.get('faculty'))
+        sql = "INSERT INTO School (school_name, department, faculty, hq_location_id) VALUES (%s, %s, %s, %s)"
+        val = (data['school_name'], data['department'],
+               data.get('faculty'), data.get('hq_location_id'))
         cursor.execute(sql, val)
         conn.commit()
         return jsonify({"message": "School created"}), 201
@@ -319,6 +397,65 @@ def manage_locations():
         conn.close()
 
 
+@app.route('/api/locations/<id>', methods=['PUT', 'DELETE'])
+def manage_location_item(id):
+    conn, error_response = get_connection_or_response()
+    if error_response:
+        return error_response
+    cursor = conn.cursor(dictionary=True)
+
+    if request.method == 'DELETE':
+        try:
+            # Check for dependencies (Maintenance)
+            cursor.execute(
+                "SELECT COUNT(*) as count FROM Maintenance WHERE location_id = %s", (id,))
+            if cursor.fetchone()['count'] > 0:
+                return jsonify({"error": "Cannot delete location with associated maintenance tasks"}), 400
+
+            cursor.execute(
+                "DELETE FROM Location WHERE location_id = %s", (id,))
+            conn.commit()
+            if cursor.rowcount == 0:
+                return jsonify({"error": "Location not found"}), 404
+            return jsonify({"message": "Location deleted"}), 200
+        except mysql.connector.Error as e:
+            conn.rollback()
+            return jsonify({"error": str(e)}), 400
+        finally:
+            cursor.close()
+            conn.close()
+
+    # PUT
+    data, error_response = parse_json()
+    if error_response:
+        return error_response
+
+    try:
+        fields = []
+        values = []
+        for key in ['room', 'floor', 'building_name', 'type', 'campus', 'school_name']:
+            if key in data:
+                fields.append(f"{key} = %s")
+                values.append(data[key])
+
+        if not fields:
+            return jsonify({"error": "No fields to update"}), 400
+
+        values.append(id)
+        sql = f"UPDATE Location SET {', '.join(fields)} WHERE location_id = %s"
+        cursor.execute(sql, tuple(values))
+        conn.commit()
+        if cursor.rowcount == 0:
+            return jsonify({"error": "Location not found"}), 404
+        return jsonify({"message": "Location updated"}), 200
+    except mysql.connector.Error as e:
+        conn.rollback()
+        return jsonify({"error": str(e)}), 400
+    finally:
+        cursor.close()
+        conn.close()
+
+
 # --- Activity Endpoints ---
 @app.route('/api/activities', methods=['GET', 'POST'])
 def manage_activities():
@@ -331,9 +468,11 @@ def manage_activities():
         try:
             cursor.execute(
                 """
-                SELECT a.*, p.name AS organiser_name
+                SELECT a.*, p.name AS organiser_name,
+                       l.building, l.room, l.floor
                 FROM Activity a
                 JOIN Person p ON a.organiser_id = p.personal_id
+                LEFT JOIN Location l ON a.location_id = l.location_id
                 """
             )
             activities = cursor.fetchall()
@@ -356,16 +495,72 @@ def manage_activities():
 
     cursor = conn.cursor(dictionary=True)
     try:
-        sql = "INSERT INTO Activity (activity_id, type, time, organiser_id) VALUES (%s, %s, %s, %s)"
+        sql = "INSERT INTO Activity (activity_id, type, time, organiser_id, location_id) VALUES (%s, %s, %s, %s, %s)"
         val = (
             data['activity_id'],
             data.get('type'),
             data.get('time'),
             data['organiser_id'],
+            data.get('location_id'),
         )
         cursor.execute(sql, val)
         conn.commit()
         return jsonify({"message": "Activity created"}), 201
+    except mysql.connector.Error as e:
+        conn.rollback()
+        return jsonify({"error": str(e)}), 400
+    finally:
+        cursor.close()
+        conn.close()
+
+
+@app.route('/api/activities/<id>', methods=['PUT', 'DELETE'])
+def manage_activity_item(id):
+    conn, error_response = get_connection_or_response()
+    if error_response:
+        return error_response
+    cursor = conn.cursor(dictionary=True)
+
+    if request.method == 'DELETE':
+        try:
+            cursor.execute(
+                "DELETE FROM Participation WHERE activity_id = %s", (id,))
+            cursor.execute(
+                "DELETE FROM Activity WHERE activity_id = %s", (id,))
+            conn.commit()
+            if cursor.rowcount == 0:
+                return jsonify({"error": "Activity not found"}), 404
+            return jsonify({"message": "Activity deleted"}), 200
+        except mysql.connector.Error as e:
+            conn.rollback()
+            return jsonify({"error": str(e)}), 400
+        finally:
+            cursor.close()
+            conn.close()
+
+    # PUT
+    data, error_response = parse_json()
+    if error_response:
+        return error_response
+
+    try:
+        fields = []
+        values = []
+        for key in ['type', 'time', 'organiser_id']:
+            if key in data:
+                fields.append(f"{key} = %s")
+                values.append(data[key])
+
+        if not fields:
+            return jsonify({"error": "No fields to update"}), 400
+
+        values.append(id)
+        sql = f"UPDATE Activity SET {', '.join(fields)} WHERE activity_id = %s"
+        cursor.execute(sql, tuple(values))
+        conn.commit()
+        if cursor.rowcount == 0:
+            return jsonify({"error": "Activity not found"}), 404
+        return jsonify({"message": "Activity updated"}), 200
     except mysql.connector.Error as e:
         conn.rollback()
         return jsonify({"error": str(e)}), 400
@@ -410,12 +605,66 @@ def manage_maintenance():
 
     cursor = conn.cursor(dictionary=True)
     try:
-        sql = "INSERT INTO Maintenance (type, frequency, location_id, chemical_used, contracted_company_id) VALUES (%s, %s, %s, %s, %s)"
-        val = (data['type'], data.get('frequency'), data['location_id'], data.get(
-            'chemical_used', False), data.get('contracted_company_id'))
-        cursor.execute(sql, val)
+        cursor.execute(
+            "INSERT INTO Maintenance (type, frequency, location_id, active_chemical, contracted_company_id) VALUES (%s, %s, %s, %s, %s)",
+            (data['type'], data.get('frequency'), data['location_id'], data.get(
+                'active_chemical', False), data.get('contracted_company_id'))
+        )
         conn.commit()
         return jsonify({"message": "Maintenance task created"}), 201
+    except mysql.connector.Error as e:
+        conn.rollback()
+        return jsonify({"error": str(e)}), 400
+    finally:
+        cursor.close()
+        conn.close()
+
+
+@app.route('/api/maintenance/<id>', methods=['PUT', 'DELETE'])
+def manage_maintenance_item(id):
+    conn, error_response = get_connection_or_response()
+    if error_response:
+        return error_response
+    cursor = conn.cursor(dictionary=True)
+
+    if request.method == 'DELETE':
+        try:
+            cursor.execute(
+                "DELETE FROM Maintenance WHERE maintenance_id = %s", (id,))
+            conn.commit()
+            if cursor.rowcount == 0:
+                return jsonify({"error": "Maintenance task not found"}), 404
+            return jsonify({"message": "Maintenance task deleted"}), 200
+        except mysql.connector.Error as e:
+            conn.rollback()
+            return jsonify({"error": str(e)}), 400
+        finally:
+            cursor.close()
+            conn.close()
+
+    # PUT
+    data, error_response = parse_json()
+    if error_response:
+        return error_response
+
+    try:
+        fields = []
+        values = []
+        for key in ['type', 'frequency', 'location_id', 'active_chemical', 'contracted_company_id']:
+            if key in data:
+                fields.append(f"{key} = %s")
+                values.append(data[key])
+
+        if not fields:
+            return jsonify({"error": "No fields to update"}), 400
+
+        values.append(id)
+        sql = f"UPDATE Maintenance SET {', '.join(fields)} WHERE maintenance_id = %s"
+        cursor.execute(sql, tuple(values))
+        conn.commit()
+        if cursor.rowcount == 0:
+            return jsonify({"error": "Maintenance task not found"}), 404
+        return jsonify({"message": "Maintenance task updated"}), 200
     except mysql.connector.Error as e:
         conn.rollback()
         return jsonify({"error": str(e)}), 400
@@ -439,10 +688,13 @@ def manage_participations():
             cursor.execute(
                 """
                 SELECT p.personal_id, per.name AS person_name,
-                       a.activity_id, a.type AS activity_type
+                       a.activity_id, a.type AS activity_type,
+                       a.time AS activity_time,
+                       l.building, l.room
                 FROM Participation p
                 JOIN Person per ON p.personal_id = per.personal_id
                 JOIN Activity a ON p.activity_id = a.activity_id
+                LEFT JOIN Location l ON a.location_id = l.location_id
                 """
             )
             participations = cursor.fetchall()
@@ -787,6 +1039,108 @@ def manage_building_supervision():
         return jsonify({"message": "Supervision assigned"}), 201
     except mysql.connector.Error as e:
         conn.rollback()
+        return jsonify({"error": str(e)}), 400
+    finally:
+        cursor.close()
+        conn.close()
+
+
+# --- Bulk Import Endpoint ---
+@app.route('/api/import', methods=['POST'])
+def bulk_import():
+    data, error_response = parse_json(required_fields=['entity', 'items'])
+    if error_response:
+        return error_response
+
+    entity = data['entity']
+    items = data['items']
+
+    if not isinstance(items, list):
+        return jsonify({"error": "Items must be a list"}), 400
+
+    conn, error_response = get_connection_or_response()
+    if error_response:
+        return error_response
+    cursor = conn.cursor(dictionary=True)
+
+    try:
+        if entity == 'persons':
+            sql = "INSERT INTO Person (personal_id, name, age, gender, date_of_birth, supervisor_id) VALUES (%s, %s, %s, %s, %s, %s)"
+            for item in items:
+                val = (item.get('personal_id'), item.get('name'), item.get('age'), item.get(
+                    'gender'), item.get('date_of_birth'), item.get('supervisor_id'))
+                cursor.execute(sql, val)
+        elif entity == 'locations':
+            sql = "INSERT INTO Location (room, floor, building, type, campus, school_name) VALUES (%s, %s, %s, %s, %s, %s)"
+            for item in items:
+                val = (item.get('room'), item.get('floor'), item.get('building'), item.get(
+                    'type'), item.get('campus'), item.get('school_name'))
+                cursor.execute(sql, val)
+        elif entity == 'activities':
+            sql = "INSERT INTO Activity (activity_id, type, time, organiser_id) VALUES (%s, %s, %s, %s)"
+            for item in items:
+                val = (item.get('activity_id'), item.get('type'),
+                       item.get('time'), item.get('organiser_id'))
+                cursor.execute(sql, val)
+        else:
+            return jsonify({"error": "Unsupported entity for bulk import"}), 400
+
+        conn.commit()
+        return jsonify({"message": f"Successfully imported {len(items)} items"}), 201
+    except mysql.connector.Error as e:
+        conn.rollback()
+        return jsonify({"error": str(e)}), 400
+    finally:
+        cursor.close()
+        conn.close()
+
+
+# --- Safety Search Endpoint ---
+@app.route('/api/search/safety', methods=['GET'])
+def safety_search():
+    building = request.args.get('building')
+    start_time = request.args.get('start_time')
+    end_time = request.args.get('end_time')
+
+    conn, error_response = get_connection_or_response()
+    if error_response:
+        return error_response
+    cursor = conn.cursor(dictionary=True)
+
+    try:
+        # Find cleaning activities or maintenance in the given building/time
+        # Note: Maintenance table has frequency but not specific scheduled times in this schema
+        # We will assume 'Maintenance' implies scheduled tasks, and we filter by building.
+        # If Activity table had a 'Cleaning' type we could check that too, but Maintenance is the primary place for 'Cleaning'.
+
+        query = """
+            SELECT m.*, l.building, l.room, l.floor
+            FROM Maintenance m
+            JOIN Location l ON m.location_id = l.location_id
+            WHERE m.type = 'Cleaning' AND m.active_chemical = 1
+        """
+        params = []
+
+        if building:
+            query += " AND l.building = %s"
+            params.append(building)
+
+        # Note: Since Maintenance doesn't have a specific 'date/time' field (only frequency),
+        # we can't strictly filter by time range unless we assume some schedule.
+        # However, the requirement is "Find scheduled cleaning activities...".
+        # Given the schema limitations, we will return all cleaning tasks for the building
+        # and let the frontend display them with their frequency.
+
+        cursor.execute(query, tuple(params))
+        results = cursor.fetchall()
+
+        # Add warning flag
+        for r in results:
+            if r.get('chemical_used'):
+                r['warning'] = "WARNING: Hazardous chemicals used!"
+
+        return jsonify(results), 200
+    except mysql.connector.Error as e:
         return jsonify({"error": str(e)}), 400
     finally:
         cursor.close()

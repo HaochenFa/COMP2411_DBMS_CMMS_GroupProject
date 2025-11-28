@@ -10,6 +10,7 @@ import {
   School,
   MapPin,
   Link as LinkIcon,
+  ShieldAlert,
 } from "lucide-react";
 import "../App.css";
 
@@ -33,6 +34,9 @@ export default function Layout({ children }) {
         </div>
         <NavLink to="/" icon={LayoutDashboard}>
           Dashboard
+        </NavLink>
+        <NavLink to="/safety-search" icon={ShieldAlert}>
+          Safety Search
         </NavLink>
         <div className="sidebar-section">Management</div>
         <NavLink to="/persons" icon={Users}>

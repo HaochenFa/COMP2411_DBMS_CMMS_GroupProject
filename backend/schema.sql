@@ -38,13 +38,14 @@ CREATE TABLE
     School (
         school_name VARCHAR(100) PRIMARY KEY,
         department VARCHAR(100) NOT NULL UNIQUE,
-        faculty VARCHAR(100)
+        faculty VARCHAR(100),
+        hq_location_id INT -- [NEW] Link to HQ Location (FK added later)
     );
 
 -- [NEW] Building Entity (Normalized from Location)
 CREATE TABLE
     Building (
-        building_name VARCHAR(50) PRIMARY KEY,
+        building VARCHAR(50) PRIMARY KEY,
         campus VARCHAR(50)
     );
 
@@ -61,12 +62,12 @@ CREATE TABLE
         location_id INT AUTO_INCREMENT PRIMARY KEY,
         room VARCHAR(20),
         floor VARCHAR(10),
-        building_name VARCHAR(50), -- FK to Building
+        building VARCHAR(50), -- FK to Building
         type VARCHAR(20), -- Room, Square, Gate, Level
         campus VARCHAR(50),
         school_name VARCHAR(100),
         FOREIGN KEY (school_name) REFERENCES School (school_name),
-        FOREIGN KEY (building_name) REFERENCES Building (building_name)
+        FOREIGN KEY (building) REFERENCES Building (building)
     );
 
 CREATE TABLE
@@ -75,7 +76,9 @@ CREATE TABLE
         type VARCHAR(50), -- Lecture, Event
         time DATETIME,
         organiser_id VARCHAR(20) NOT NULL,
-        FOREIGN KEY (organiser_id) REFERENCES Person (personal_id)
+        location_id INT, -- [NEW] Link to Location
+        FOREIGN KEY (organiser_id) REFERENCES Person (personal_id),
+        FOREIGN KEY (location_id) REFERENCES Location (location_id)
     );
 
 CREATE TABLE
@@ -84,7 +87,7 @@ CREATE TABLE
         type VARCHAR(50), -- Repair, Renovation, Security, Cleaning
         frequency VARCHAR(50),
         location_id INT NOT NULL,
-        chemical_used BOOLEAN, -- [MODIFIED] Attribute
+        active_chemical BOOLEAN, -- [MODIFIED] Attribute
         contracted_company_id INT, -- [MODIFIED] FK to ExternalCompany
         FOREIGN KEY (location_id) REFERENCES Location (location_id),
         FOREIGN KEY (contracted_company_id) REFERENCES ExternalCompany (company_id)
@@ -114,10 +117,10 @@ CREATE TABLE
 CREATE TABLE
     BuildingSupervision (
         supervisor_id VARCHAR(20),
-        building_name VARCHAR(50),
-        PRIMARY KEY (supervisor_id, building_name),
+        building VARCHAR(50),
+        PRIMARY KEY (supervisor_id, building),
         FOREIGN KEY (supervisor_id) REFERENCES Person (personal_id),
-        FOREIGN KEY (building_name) REFERENCES Building (building_name)
+        FOREIGN KEY (building) REFERENCES Building (building)
     );
 
 -- [MODIFY] Location: Add type, link to Building
@@ -125,3 +128,6 @@ CREATE TABLE
 -- Dropping Location was done at top of file. Recreating with new schema.
 -- (The previous CREATE TABLE Location block needs to be replaced entirely, 
 --  so I will actually target the CREATE TABLE Location block instead of appending)
+-- [AFTER-CREATE] Add circular FK
+ALTER TABLE School
+ADD FOREIGN KEY (hq_location_id) REFERENCES Location (location_id);
