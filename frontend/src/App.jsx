@@ -4,6 +4,7 @@ import Layout from './components/Layout';
 import Dashboard from './components/Dashboard';
 import EntityManager from './components/EntityManager';
 import RelationshipManager from './components/RelationshipManager';
+import DevConsole from './components/DevConsole';
 import './App.css';
 
 function App() {

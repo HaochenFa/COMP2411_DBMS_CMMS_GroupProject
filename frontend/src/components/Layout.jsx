@@ -57,6 +57,12 @@ export default function Layout({ children }) {
         <NavLink to="/affiliations" icon={LinkIcon}>
           Affiliations
         </NavLink>
+        
+        <div style={{ marginTop: 'auto', borderTop: '1px solid #eee', paddingTop: '10px' }}>
+          <NavLink to="/dev-console" icon={Database}>
+            Dev Console
+          </NavLink>
+        </div>
       </nav>
       <main className="content">{children}</main>
     </div>
