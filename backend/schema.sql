@@ -1,16 +1,20 @@
 -- Schema for Campus Maintenance and Management System
-DROP TABLE IF EXISTS BuildingSupervision;
-DROP TABLE IF EXISTS ActivityChemical;
-DROP TABLE IF EXISTS Chemical;
 DROP TABLE IF EXISTS Maintenance;
+
 DROP TABLE IF EXISTS Participation;
+
 DROP TABLE IF EXISTS Affiliation;
+
 DROP TABLE IF EXISTS Activity;
+
 DROP TABLE IF EXISTS Location;
-DROP TABLE IF EXISTS Building;
+
 DROP TABLE IF EXISTS ExternalCompany;
+
 DROP TABLE IF EXISTS School;
+
 DROP TABLE IF EXISTS Profile;
+
 DROP TABLE IF EXISTS Person;
 
 CREATE TABLE
@@ -42,13 +46,6 @@ CREATE TABLE
         hq_location_id INT -- [NEW] Link to HQ Location (FK added later)
     );
 
--- [NEW] Building Entity (Normalized from Location)
-CREATE TABLE
-    Building (
-        building VARCHAR(50) PRIMARY KEY,
-        campus VARCHAR(50)
-    );
-
 -- [NEW] External Company for contracting
 CREATE TABLE
     ExternalCompany (
@@ -62,12 +59,11 @@ CREATE TABLE
         location_id INT AUTO_INCREMENT PRIMARY KEY,
         room VARCHAR(20),
         floor VARCHAR(10),
-        building VARCHAR(50), -- FK to Building
+        building VARCHAR(50), -- Simple building name attribute
         type VARCHAR(20), -- Room, Square, Gate, Level
         campus VARCHAR(50),
         school_name VARCHAR(100),
-        FOREIGN KEY (school_name) REFERENCES School (school_name),
-        FOREIGN KEY (building) REFERENCES Building (building)
+        FOREIGN KEY (school_name) REFERENCES School (school_name)
     );
 
 CREATE TABLE
@@ -113,21 +109,5 @@ CREATE TABLE
         FOREIGN KEY (school_name) REFERENCES School (school_name)
     );
 
--- [NEW] Building Supervision by Mid-level Managers
-CREATE TABLE
-    BuildingSupervision (
-        supervisor_id VARCHAR(20),
-        building VARCHAR(50),
-        PRIMARY KEY (supervisor_id, building),
-        FOREIGN KEY (supervisor_id) REFERENCES Person (personal_id),
-        FOREIGN KEY (building) REFERENCES Building (building)
-    );
-
--- [MODIFY] Location: Add type, link to Building
--- Note: In a real migration, we would migrate data. Here we drop/recreate.
--- Dropping Location was done at top of file. Recreating with new schema.
--- (The previous CREATE TABLE Location block needs to be replaced entirely, 
---  so I will actually target the CREATE TABLE Location block instead of appending)
 -- [AFTER-CREATE] Add circular FK
-ALTER TABLE School
-ADD FOREIGN KEY (hq_location_id) REFERENCES Location (location_id);
+ALTER TABLE School ADD FOREIGN KEY (hq_location_id) REFERENCES Location (location_id);

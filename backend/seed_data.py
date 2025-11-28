@@ -18,8 +18,8 @@ def seed_data():
         # Clear existing data
         cursor.execute("SET FOREIGN_KEY_CHECKS = 0")
         tables = [
-            "BuildingSupervision", "Maintenance",
-            "Participation", "Affiliation", "Activity", "Location", "Building",
+            "Maintenance",
+            "Participation", "Affiliation", "Activity", "Location",
             "ExternalCompany", "School", "Profile", "Person"
         ]
         for table in tables:
@@ -54,7 +54,7 @@ def seed_data():
         cursor.execute("SELECT company_id FROM ExternalCompany")
         company_ids = [row[0] for row in cursor.fetchall()]
 
-        # --- 3. Buildings ---
+        # --- 3. Buildings (as simple list for location seeding) ---
         buildings = [
             ('PQ Wing', 'Core Campus'),
             ('Z Block', 'North Campus'),
@@ -67,9 +67,7 @@ def seed_data():
             ('Student Halls', 'Residential Area'),
             ('Library', 'Core Campus')
         ]
-        cursor.executemany(
-            "INSERT INTO Building (building, campus) VALUES (%s, %s)", buildings)
-        print(f"Inserted {cursor.rowcount} buildings.")
+        # Buildings are now just string attributes in Location, no separate table
 
         # --- 4. People ---
         first_names = ["Alice", "Bob", "Charlie", "Diana", "Evan", "Fiona", "George",
@@ -134,20 +132,8 @@ def seed_data():
             "INSERT INTO Affiliation (personal_id, school_name) VALUES (%s, %s)", affiliations_data)
         print(f"Inserted {cursor.rowcount} affiliations.")
 
-        # --- 7. Building Supervision ---
-        supervision_data = []
+        # --- 7. Locations ---
         building_names = [b[0] for b in buildings]
-        # Assign supervisors to buildings
-        for b in building_names:
-            sid = random.choice(supervisor_ids)
-            if (sid, b) not in supervision_data:
-                supervision_data.append((sid, b))
-
-        cursor.executemany(
-            "INSERT INTO BuildingSupervision (supervisor_id, building) VALUES (%s, %s)", supervision_data)
-        print(f"Inserted {cursor.rowcount} building supervisions.")
-
-        # --- 8. Locations ---
         locations_data = []
         loc_types = ['Room', 'Lecture Hall',
                      'Lab', 'Office', 'Corridor', 'Garden']

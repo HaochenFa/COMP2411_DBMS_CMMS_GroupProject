@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import axios from 'axios';
-import { Plus, Trash2, Edit2, Save, X } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from "react";
+import axios from "axios";
+import { Plus, Trash2, Edit2, Save, X } from "lucide-react";
 
 const API_URL = "http://127.0.0.1:5050/api";
 
@@ -80,13 +80,13 @@ export default function EntityManager({ title, endpoint, columns, idField, creat
     const reader = new FileReader();
     reader.onload = async (e) => {
       const text = e.target.result;
-      const lines = text.split('\n');
-      const headers = lines[0].split(',').map(h => h.trim());
+      const lines = text.split("\n");
+      const headers = lines[0].split(",").map((h) => h.trim());
       const items = [];
 
       for (let i = 1; i < lines.length; i++) {
         if (!lines[i].trim()) continue;
-        const values = lines[i].split(',');
+        const values = lines[i].split(",");
         const item = {};
         headers.forEach((h, idx) => {
           if (values[idx]) item[h] = values[idx].trim();
@@ -110,29 +110,62 @@ export default function EntityManager({ title, endpoint, columns, idField, creat
 
   return (
     <div className="page-container">
-      <div className="header-section" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div
+        className="header-section"
+        style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
+      >
         <div>
           <h2>{title}</h2>
           <p className="subtitle">Manage {title.toLowerCase()} records</p>
         </div>
-        <div style={{ display: 'flex', gap: '10px' }}>
+        <div style={{ display: "flex", gap: "10px" }}>
           <button onClick={() => setIsImporting(!isImporting)} className="secondary-btn">
             Import CSV
           </button>
           <button onClick={() => setIsCreating(!isCreating)}>
-            {isCreating ? <><X size={16} /> Cancel</> : <><Plus size={16} /> Add New</>}
+            {isCreating ? (
+              <>
+                <X size={16} /> Cancel
+              </>
+            ) : (
+              <>
+                <Plus size={16} /> Add New
+              </>
+            )}
           </button>
         </div>
       </div>
 
       {isImporting && (
-        <div className="import-section" style={{ padding: '20px', background: '#f8f9fa', marginBottom: '20px', borderRadius: '8px' }}>
+        <div
+          className="import-section"
+          style={{
+            padding: "20px",
+            background: "#f8f9fa",
+            marginBottom: "20px",
+            borderRadius: "8px",
+          }}
+        >
           <h3>Bulk Import</h3>
           <p>Upload a CSV file with headers matching the field names.</p>
-          <form onSubmit={handleImport} style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-            <input type="file" accept=".csv" onChange={e => setImportFile(e.target.files[0])} required />
+          <form
+            onSubmit={handleImport}
+            style={{ display: "flex", gap: "10px", alignItems: "center" }}
+          >
+            <input
+              type="file"
+              accept=".csv"
+              onChange={(e) => setImportFile(e.target.files[0])}
+              required
+            />
             <button type="submit">Upload</button>
-            <button type="button" onClick={() => setIsImporting(false)} style={{ background: 'transparent', color: '#666' }}>Cancel</button>
+            <button
+              type="button"
+              onClick={() => setIsImporting(false)}
+              style={{ background: "transparent", color: "#666" }}
+            >
+              Cancel
+            </button>
           </form>
         </div>
       )}
@@ -141,31 +174,35 @@ export default function EntityManager({ title, endpoint, columns, idField, creat
 
       {isCreating && (
         <form onSubmit={handleCreate} className="data-form">
-          {createFields.map(field => (
-            <div key={field.name} style={{ flex: '1 1 200px' }}>
-              {field.type === 'select' ? (
+          {createFields.map((field) => (
+            <div key={field.name} style={{ flex: "1 1 200px" }}>
+              {field.type === "select" ? (
                 <select
-                  value={newItem[field.name] || ''}
-                  onChange={e => setNewItem({ ...newItem, [field.name]: e.target.value })}
+                  value={newItem[field.name] || ""}
+                  onChange={(e) => setNewItem({ ...newItem, [field.name]: e.target.value })}
                   required={field.required}
                 >
                   <option value="">Select {field.label}</option>
-                  {field.options.map(opt => (
-                    <option key={opt} value={opt}>{opt}</option>
+                  {field.options.map((opt) => (
+                    <option key={opt} value={opt}>
+                      {opt}
+                    </option>
                   ))}
                 </select>
               ) : (
                 <input
-                  type={field.type || 'text'}
+                  type={field.type || "text"}
                   placeholder={field.label}
-                  value={newItem[field.name] || ''}
-                  onChange={e => setNewItem({ ...newItem, [field.name]: e.target.value })}
+                  value={newItem[field.name] || ""}
+                  onChange={(e) => setNewItem({ ...newItem, [field.name]: e.target.value })}
                   required={field.required}
                 />
               )}
             </div>
           ))}
-          <button type="submit" style={{ flex: '0 0 auto' }}><Save size={16} /> Save</button>
+          <button type="submit" style={{ flex: "0 0 auto" }}>
+            <Save size={16} /> Save
+          </button>
         </form>
       )}
 
@@ -173,35 +210,57 @@ export default function EntityManager({ title, endpoint, columns, idField, creat
         <table>
           <thead>
             <tr>
-              {columns.map(col => <th key={col.key}>{col.label}</th>)}
+              {columns.map((col) => (
+                <th key={col.key}>{col.label}</th>
+              ))}
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             {items.map((item, idx) => (
               <tr key={item[idField] || idx}>
-                {columns.map(col => (
-                  <td key={col.key}>
-                    {editingId === item[idField] ? (
-                      <input 
-                        value={editFormData[col.key] || ''} 
-                        onChange={e => setEditFormData({...editFormData, [col.key]: e.target.value})}
-                      />
-                    ) : (
-                      item[col.key]
-                    )}
-                  </td>
-                ))}
+                {columns.map((col) => {
+                  const rawValue = item[col.key];
+                  const displayValue = col.render ? col.render(rawValue, item) : rawValue;
+                  return (
+                    <td key={col.key}>
+                      {editingId === item[idField] ? (
+                        <input
+                          value={editFormData[col.key] || ""}
+                          onChange={(e) =>
+                            setEditFormData({ ...editFormData, [col.key]: e.target.value })
+                          }
+                        />
+                      ) : (
+                        displayValue
+                      )}
+                    </td>
+                  );
+                })}
                 <td>
                   {editingId === item[idField] ? (
                     <>
-                      <button onClick={() => handleUpdate(item[idField])} className="icon-btn success"><Save size={16} /></button>
-                      <button onClick={cancelEdit} className="icon-btn"><X size={16} /></button>
+                      <button
+                        onClick={() => handleUpdate(item[idField])}
+                        className="icon-btn success"
+                      >
+                        <Save size={16} />
+                      </button>
+                      <button onClick={cancelEdit} className="icon-btn">
+                        <X size={16} />
+                      </button>
                     </>
                   ) : (
                     <>
-                      <button onClick={() => startEdit(item)} className="icon-btn"><Edit2 size={16} /></button>
-                      <button onClick={() => handleDelete(item[idField])} className="icon-btn danger"><Trash2 size={16} /></button>
+                      <button onClick={() => startEdit(item)} className="icon-btn">
+                        <Edit2 size={16} />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(item[idField])}
+                        className="icon-btn danger"
+                      >
+                        <Trash2 size={16} />
+                      </button>
                     </>
                   )}
                 </td>

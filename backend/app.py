@@ -162,14 +162,12 @@ def manage_person_item(id):
 
     if request.method == 'DELETE':
         try:
-            # First delete dependencies (Participation, Affiliation, Profile, BuildingSupervision)
+            # First delete dependencies (Participation, Affiliation, Profile)
             cursor.execute(
                 "DELETE FROM Participation WHERE personal_id = %s", (id,))
             cursor.execute(
                 "DELETE FROM Affiliation WHERE personal_id = %s", (id,))
             cursor.execute("DELETE FROM Profile WHERE personal_id = %s", (id,))
-            cursor.execute(
-                "DELETE FROM BuildingSupervision WHERE supervisor_id = %s", (id,))
             # Then delete Person
             cursor.execute("DELETE FROM Person WHERE personal_id = %s", (id,))
             conn.commit()
@@ -299,10 +297,12 @@ def manage_schools():
 
         cursor = conn.cursor(dictionary=True)
         try:
+            # Only show legitimate schools (those with a faculty assigned)
             cursor.execute("""
                 SELECT s.*, l.building, l.room
                 FROM School s
                 LEFT JOIN Location l ON s.hq_location_id = l.location_id
+                WHERE s.faculty IS NOT NULL
             """)
             schools = cursor.fetchall()
             return jsonify(schools), 200
@@ -375,14 +375,14 @@ def manage_locations():
     cursor = conn.cursor(dictionary=True)
     try:
         sql = (
-            "INSERT INTO Location (room, floor, building_name, type, campus, school_name) "
+            "INSERT INTO Location (room, floor, building, type, campus, school_name) "
             "VALUES (%s, %s, %s, %s, %s, %s)"
         )
         val = (
             data.get('room'),
             data.get('floor'),
-            data.get('building_name'),  # Changed from building
-            data.get('type'),          # New field
+            data.get('building'),
+            data.get('type'),
             data.get('campus'),
             data.get('school_name'),
         )
@@ -433,7 +433,7 @@ def manage_location_item(id):
     try:
         fields = []
         values = []
-        for key in ['room', 'floor', 'building_name', 'type', 'campus', 'school_name']:
+        for key in ['room', 'floor', 'building', 'type', 'campus', 'school_name']:
             if key in data:
                 fields.append(f"{key} = %s")
                 values.append(data[key])
@@ -468,11 +468,18 @@ def manage_activities():
         try:
             cursor.execute(
                 """
-                SELECT a.*, p.name AS organiser_name,
-                       l.building, l.room, l.floor
+                SELECT
+                    a.activity_id,
+                    a.type,
+                    a.time,
+                    p.name AS organiser_name,
+                    l.building,
+                    l.room,
+                    l.floor
                 FROM Activity a
                 JOIN Person p ON a.organiser_id = p.personal_id
                 LEFT JOIN Location l ON a.location_id = l.location_id
+                ORDER BY a.activity_id
                 """
             )
             activities = cursor.fetchall()
@@ -960,90 +967,6 @@ def manage_external_companies():
         cursor.close()
         conn.close()
 
-# Building Endpoints
-
-
-@app.route('/api/buildings', methods=['GET', 'POST'])
-def manage_buildings():
-    if request.method == 'GET':
-        conn, error_response = get_connection_or_response()
-        if error_response:
-            return error_response
-        cursor = conn.cursor(dictionary=True)
-        try:
-            cursor.execute("SELECT * FROM Building")
-            return jsonify(cursor.fetchall()), 200
-        finally:
-            cursor.close()
-            conn.close()
-
-    data, error_response = parse_json(required_fields=['building_name'])
-    if error_response:
-        return error_response
-    conn, error_response = get_connection_or_response()
-    if error_response:
-        return error_response
-    cursor = conn.cursor(dictionary=True)
-    try:
-        cursor.execute("INSERT INTO Building (building_name, campus) VALUES (%s, %s)",
-                       (data['building_name'], data.get('campus')))
-        conn.commit()
-        return jsonify({"message": "Building created"}), 201
-    except mysql.connector.Error as e:
-        conn.rollback()
-        return jsonify({"error": str(e)}), 400
-    finally:
-        cursor.close()
-        conn.close()
-
-# Building Supervision Endpoints
-
-
-@app.route('/api/building-supervision', methods=['GET', 'POST'])
-def manage_building_supervision():
-    if request.method == 'GET':
-        conn, error_response = get_connection_or_response()
-        if error_response:
-            return error_response
-        cursor = conn.cursor(dictionary=True)
-        try:
-            cursor.execute("""
-                SELECT bs.*, p.name as supervisor_name
-                FROM BuildingSupervision bs
-                JOIN Person p ON bs.supervisor_id = p.personal_id
-            """)
-            return jsonify(cursor.fetchall()), 200
-        finally:
-            cursor.close()
-            conn.close()
-
-    data, error_response = parse_json(
-        required_fields=['supervisor_id', 'building_name'])
-    if error_response:
-        return error_response
-    conn, error_response = get_connection_or_response()
-    if error_response:
-        return error_response
-    cursor = conn.cursor(dictionary=True)
-    try:
-        # Verify supervisor is a Mid-level Manager
-        cursor.execute(
-            "SELECT job_role FROM Profile WHERE personal_id = %s", (data['supervisor_id'],))
-        profile = cursor.fetchone()
-        if not profile or profile['job_role'] != 'Mid-level Manager':
-            return jsonify({"error": "Supervisor must be a Mid-level Manager"}), 400
-
-        cursor.execute("INSERT INTO BuildingSupervision (supervisor_id, building_name) VALUES (%s, %s)",
-                       (data['supervisor_id'], data['building_name']))
-        conn.commit()
-        return jsonify({"message": "Supervision assigned"}), 201
-    except mysql.connector.Error as e:
-        conn.rollback()
-        return jsonify({"error": str(e)}), 400
-    finally:
-        cursor.close()
-        conn.close()
-
 
 # --- Bulk Import Endpoint ---
 @app.route('/api/import', methods=['POST'])
@@ -1117,7 +1040,7 @@ def safety_search():
             SELECT m.*, l.building, l.room, l.floor
             FROM Maintenance m
             JOIN Location l ON m.location_id = l.location_id
-            WHERE m.type = 'Cleaning' AND m.active_chemical = 1
+            WHERE m.type = 'Cleaning'
         """
         params = []
 
@@ -1136,7 +1059,7 @@ def safety_search():
 
         # Add warning flag
         for r in results:
-            if r.get('chemical_used'):
+            if r.get('active_chemical'):
                 r['warning'] = "WARNING: Hazardous chemicals used!"
 
         return jsonify(results), 200

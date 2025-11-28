@@ -8,7 +8,6 @@ import {
   Wrench,
   Activity,
   School,
-  MapPin,
   Link as LinkIcon,
   ShieldAlert,
 } from "lucide-react";
@@ -29,9 +28,7 @@ export default function Layout({ children }) {
   return (
     <div className="app">
       <nav className="sidebar">
-        <div className="logo">
-          PolyU CMMS
-        </div>
+        <div className="logo">PolyU CMMS</div>
         <NavLink to="/" icon={LayoutDashboard}>
           Dashboard
         </NavLink>
@@ -45,9 +42,7 @@ export default function Layout({ children }) {
         <NavLink to="/schools" icon={School}>
           Schools
         </NavLink>
-        <NavLink to="/locations" icon={MapPin}>
-          Locations
-        </NavLink>
+
         <NavLink to="/activities" icon={Activity}>
           Activities
         </NavLink>
