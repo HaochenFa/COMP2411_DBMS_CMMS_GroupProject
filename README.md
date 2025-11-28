@@ -1,4 +1,25 @@
-# CMMS Project
+# PolyU CMMS - Campus Maintenance and Management System
+
+A comprehensive database-driven application for managing campus maintenance, activities, personnel, and facilities at The Hong Kong Polytechnic University.
+
+## Features
+
+### Core Functionality
+
+- **Executive Dashboard**: Real-time visualization of maintenance tasks, people distribution, activities, and school statistics
+- **Entity Management**: Full CRUD operations for People, Schools, Activities, and Maintenance records
+- **Relationship Management**: Manage Participations (Person-Activity) and Affiliations (Person-School)
+- **Safety Search**: Search for cleaning activities with chemical hazards by building location
+- **Dev Console**: SQL query interface with query history and localStorage persistence
+- **Bulk Import**: CSV import functionality for batch data operations
+
+### Technical Features
+
+- **Electron Desktop App**: Standalone desktop application with integrated backend and frontend
+- **Docker Support**: Fully containerized deployment with MySQL, Flask backend, and React frontend
+- **PolyU Themed UI**: Red wine and white color scheme matching PolyU branding
+- **Responsive Design**: Modern, compact layout with glass panel effects
+- **Data Visualization**: Interactive charts using Recharts library
 
 ## Prerequisites
 
@@ -190,5 +211,160 @@ Ensure your MySQL server is running. Create a database (default name `cmms_db`) 
 
 ## Project Structure
 
-- `backend/`: Flask application and database logic.
-- `frontend/`: React application with Vite.
+```
+.
+├── backend/              # Flask REST API backend
+│   ├── app.py           # Main Flask application with API endpoints
+│   ├── db.py            # Database connection utilities
+│   ├── db_init.py       # Database initialization script
+│   ├── schema.sql       # Database schema definition
+│   ├── seed_data.py     # Mock data generation script
+│   ├── wait_for_db.py   # Docker database readiness check
+│   ├── Dockerfile       # Backend container configuration
+│   └── requirements.txt # Python dependencies
+│
+├── frontend/            # React + Vite frontend
+│   ├── src/
+│   │   ├── components/  # React components
+│   │   │   ├── Dashboard.jsx           # Executive dashboard with charts
+│   │   │   ├── EntityManager.jsx       # Generic CRUD component
+│   │   │   ├── RelationshipManager.jsx # Relationship management
+│   │   │   ├── SafetySearch.jsx        # Chemical hazard search
+│   │   │   ├── DevConsole.jsx          # SQL query interface
+│   │   │   └── Layout.jsx              # App layout and navigation
+│   │   ├── App.jsx      # Main application component
+│   │   └── App.css      # PolyU-themed styling
+│   ├── Dockerfile       # Frontend container configuration
+│   └── package.json     # Node.js dependencies
+│
+├── desktop/             # Electron desktop wrapper
+│   ├── main.js          # Electron main process
+│   └── package.json     # Electron dependencies
+│
+├── docker-compose.yml   # Multi-container orchestration
+├── run.sh              # macOS/Linux startup script
+└── run.ps1             # Windows PowerShell startup script
+```
+
+## Database Schema
+
+The system uses a normalized relational database with the following entities:
+
+- **Person**: Personal information with hierarchical supervisor relationships
+- **Profile**: One-to-one relationship with Person for job roles and status
+- **School**: Academic units with department and faculty information
+- **Location**: Physical locations linked to buildings and schools
+- **Activity**: Events and activities organized by people at specific locations
+- **Maintenance**: Maintenance tasks with type, frequency, and chemical usage tracking
+- **ExternalCompany**: Contracted companies for maintenance services
+- **Participation**: Many-to-many relationship between Person and Activity
+- **Affiliation**: Many-to-many relationship between Person and School
+
+## API Endpoints
+
+The backend provides RESTful API endpoints for:
+
+- `/api/persons` - Person CRUD operations
+- `/api/profiles` - Profile management
+- `/api/schools` - School management
+- `/api/locations` - Location management
+- `/api/activities` - Activity management
+- `/api/maintenance` - Maintenance task management
+- `/api/companies` - External company management
+- `/api/participations` - Participation relationship management
+- `/api/affiliations` - Affiliation relationship management
+- `/api/search/safety` - Safety search for chemical hazards
+- `/api/query` - Execute read-only SQL queries (Dev Console)
+- `/api/maintenance-summary` - Dashboard statistics
+- `/api/people-summary` - People distribution by role
+- `/api/activities-summary` - Activities by type
+- `/api/school-stats` - School statistics
+
+## Development Notes
+
+### Backend (Flask)
+
+- Runs on port **5050** (not 5000)
+- Automatic database initialization on first startup
+- Seed data generation available via `backend/seed_data.py`
+- CORS enabled for frontend communication
+- Read-only SQL query validation for security
+
+### Frontend (React + Vite)
+
+- Runs on port **5173**
+- API URL configured to `http://localhost:5050/api`
+- Uses Recharts for data visualization
+- localStorage persistence for Dev Console
+- Responsive design with PolyU branding
+
+### Docker Setup
+
+- MySQL 8.0 database on internal network
+- Backend waits for database readiness before starting
+- Frontend depends on backend availability
+- Persistent volume for database data
+- All services restart automatically unless stopped
+
+### Electron App
+
+- Wraps the web application in a desktop window
+- No external browser required
+- Checks for Docker and Node.js installation
+- Waits for frontend readiness before loading
+- Provides native desktop experience
+
+## Current Status
+
+✅ **Completed Features:**
+
+- Full database schema with normalized relationships
+- Complete REST API with CRUD operations
+- Executive dashboard with real-time visualizations
+- Entity and relationship management interfaces
+- Safety search functionality
+- Dev Console with SQL query interface
+- Docker containerization
+- Electron desktop wrapper
+- Automated startup scripts
+- Mock data generation
+- PolyU-themed UI
+
+🚧 **Known Limitations:**
+
+- Dev Console allows read-only SELECT queries only
+- No user authentication/authorization system
+- No data export functionality (except via Dev Console)
+- Limited error handling in some edge cases
+
+## Troubleshooting
+
+### Docker Issues
+
+- Ensure Docker Desktop is running before executing `run.sh` or `run.ps1`
+- Check Docker daemon status: `docker info`
+- View container logs: `docker compose logs -f`
+- Restart containers: `docker compose restart`
+
+### Database Connection Issues
+
+- Verify MySQL container is running: `docker compose ps`
+- Check backend logs for connection errors
+- Ensure `.env` file has correct credentials (manual setup only)
+
+### Frontend Not Loading
+
+- Check if backend is accessible: `curl http://localhost:5050/api/persons`
+- Verify frontend container is running
+- Check browser console for errors
+- Ensure API_URL in `frontend/src/App.jsx` matches backend port
+
+### Port Conflicts
+
+- Backend uses port 5050 (change in `docker-compose.yml` if needed)
+- Frontend uses port 5173 (change in `docker-compose.yml` if needed)
+- MySQL uses internal Docker network (not exposed to host)
+
+## License
+
+This project is developed for educational purposes as part of COMP2411 Database System course at The Hong Kong Polytechnic University.
