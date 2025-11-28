@@ -170,6 +170,8 @@ function App() {
               />
             }
           />
+
+          <Route path="/dev-console" element={<DevConsole />} />
         </Routes>
       </Layout>
     </Router>
