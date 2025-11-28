@@ -28,14 +28,15 @@ def seed_data():
 
         # --- 1. Schools ---
         schools = [
-            ('School of Computing', 'COMP', 'Faculty of Engineering'),
-            ('School of Design', 'SD', 'Faculty of Design'),
-            ('Faculty of Business', 'FB', 'Faculty of Business'),
-            ('Department of Engineering', 'ENG', 'Faculty of Engineering'),
-            ('School of Hotel & Tourism', 'SHTM', 'Faculty of Business')
+            ('School of Computing', 'COMP', 'Faculty of Engineering', 'Library'),
+            ('School of Design', 'SD', 'Faculty of Design', 'Z Block'),
+            ('Faculty of Business', 'FB', 'Faculty of Business', 'Li Ka Shing Tower'),
+            ('Department of Engineering', 'ENG',
+             'Faculty of Engineering', 'PQ Wing'),
+            ('School of Hotel & Tourism', 'SHTM', 'Faculty of Business', 'M Block')
         ]
         cursor.executemany(
-            "INSERT INTO School (school_name, department, faculty, hq_location_id) VALUES (%s, %s, %s, NULL)", schools)
+            "INSERT INTO School (school_name, department, faculty, hq_building) VALUES (%s, %s, %s, %s)", schools)
         print(f"Inserted {cursor.rowcount} schools.")
 
         # --- 2. External Companies ---
@@ -78,29 +79,36 @@ def seed_data():
         people_data = []
         supervisor_ids = []
 
-        # Create 10 Supervisors first
+        # Create 10 Supervisors first (entered 1-3 years ago)
         for i in range(1, 11):
             pid = f"S{i:03d}"
             name = f"{random.choice(first_names)} {random.choice(last_names)}"
             age = random.randint(35, 60)
             gender = random.choice(['Male', 'Female'])
             dob = (datetime.now() - timedelta(days=age*365)).strftime('%Y-%m-%d')
-            people_data.append((pid, name, age, gender, dob, None))
+            # Supervisors joined 1-3 years ago
+            entry_date = (
+                datetime.now() - timedelta(days=random.randint(365, 1095))).strftime('%Y-%m-%d')
+            people_data.append((pid, name, gender, dob, entry_date, None))
             supervisor_ids.append(pid)
 
-        # Create 40 Regular Staff/Students
+        # Create 40 Regular Staff/Students (entered within last 2 years)
         for i in range(1, 41):
             pid = f"P{i:03d}"
             name = f"{random.choice(first_names)} {random.choice(last_names)}"
             age = random.randint(18, 50)
             gender = random.choice(['Male', 'Female'])
             dob = (datetime.now() - timedelta(days=age*365)).strftime('%Y-%m-%d')
+            # Staff/students joined within last 2 years
+            entry_date = (
+                datetime.now() - timedelta(days=random.randint(1, 730))).strftime('%Y-%m-%d')
             supervisor = random.choice(
                 supervisor_ids) if random.random() > 0.3 else None
-            people_data.append((pid, name, age, gender, dob, supervisor))
+            people_data.append(
+                (pid, name, gender, dob, entry_date, supervisor))
 
         cursor.executemany(
-            "INSERT INTO Person (personal_id, name, age, gender, date_of_birth, supervisor_id) VALUES (%s, %s, %s, %s, %s, %s)", people_data)
+            "INSERT INTO Person (personal_id, name, gender, date_of_birth, entry_date, supervisor_id) VALUES (%s, %s, %s, %s, %s, %s)", people_data)
         print(f"Inserted {cursor.rowcount} people.")
 
         # --- 5. Profiles ---
@@ -158,14 +166,6 @@ def seed_data():
         # Get Location IDs
         cursor.execute("SELECT location_id FROM Location")
         location_ids = [row[0] for row in cursor.fetchall()]
-
-        # --- 8.1 Update Schools with HQ Locations ---
-        # Assign a random location to each school as HQ
-        for school in schools:
-            hq_loc_id = random.choice(location_ids)
-            cursor.execute(
-                "UPDATE School SET hq_location_id = %s WHERE school_name = %s", (hq_loc_id, school[0]))
-        print(f"Updated {len(schools)} schools with HQ locations.")
 
         # --- 9. Activities ---
         activities_data = []
