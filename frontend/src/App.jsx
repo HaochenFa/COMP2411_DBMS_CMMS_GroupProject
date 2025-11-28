@@ -5,6 +5,7 @@ import Dashboard from "./components/Dashboard";
 import EntityManager from "./components/EntityManager";
 import RelationshipManager from "./components/RelationshipManager";
 import SafetySearch from "./components/SafetySearch";
+import DevConsole from "./components/DevConsole";
 import "./App.css";
 
 function App() {

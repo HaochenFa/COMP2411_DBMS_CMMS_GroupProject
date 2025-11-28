@@ -80,9 +80,8 @@ def execute_query():
     if not query or not query.strip():
         return jsonify({"error": "Query cannot be empty"}), 400
 
-    # Restrict to read-only operations for safety
-    if not query.strip().upper().startswith("SELECT"):
-        return jsonify({"error": "Only SELECT queries are allowed via this endpoint."}), 400
+    # Dev Mode: Allow all queries (INSERT, UPDATE, DELETE, DROP, etc.)
+    # WARNING: This is dangerous in production!
 
     conn, error_response = get_connection_or_response()
     if error_response:
@@ -91,10 +90,22 @@ def execute_query():
     cursor = conn.cursor(dictionary=True)
     try:
         cursor.execute(query)
-        result = cursor.fetchall()
-        return jsonify(result), 200
+
+        # If it's a SELECT query, return results
+        if query.strip().upper().startswith("SELECT") or query.strip().upper().startswith("SHOW"):
+            result = cursor.fetchall()
+            return jsonify(result), 200
+        else:
+            # For write operations, commit and return success message
+            conn.commit()
+            return jsonify({
+                "message": "Query executed successfully",
+                "rows_affected": cursor.rowcount
+            }), 200
+
     except mysql.connector.Error as e:
-        return jsonify({"error": str(e)}), 400
+        conn.rollback()
+        return jsonify({"error": str(e), "code": e.errno}), 400
     finally:
         cursor.close()
         conn.close()
