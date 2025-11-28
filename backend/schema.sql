@@ -1,9 +1,15 @@
 -- Schema for Campus Maintenance and Management System
 DROP TABLE IF EXISTS Maintenance;
 
+DROP TABLE IF EXISTS Participation;
+
+DROP TABLE IF EXISTS Affiliation;
+
 DROP TABLE IF EXISTS Activity;
 
 DROP TABLE IF EXISTS Location;
+
+DROP TABLE IF EXISTS ExternalCompany;
 
 DROP TABLE IF EXISTS School;
 
@@ -36,7 +42,16 @@ CREATE TABLE
     School (
         school_name VARCHAR(100) PRIMARY KEY,
         department VARCHAR(100) NOT NULL UNIQUE,
-        faculty VARCHAR(100)
+        faculty VARCHAR(100),
+        hq_location_id INT -- [NEW] Link to HQ Location (FK added later)
+    );
+
+-- [NEW] External Company for contracting
+CREATE TABLE
+    ExternalCompany (
+        company_id INT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(100) NOT NULL,
+        contact_info VARCHAR(255)
     );
 
 CREATE TABLE
@@ -44,7 +59,8 @@ CREATE TABLE
         location_id INT AUTO_INCREMENT PRIMARY KEY,
         room VARCHAR(20),
         floor VARCHAR(10),
-        building VARCHAR(50),
+        building VARCHAR(50), -- Simple building name attribute
+        type VARCHAR(20), -- Room, Square, Gate, Level
         campus VARCHAR(50),
         school_name VARCHAR(100),
         FOREIGN KEY (school_name) REFERENCES School (school_name)
@@ -56,7 +72,9 @@ CREATE TABLE
         type VARCHAR(50), -- Lecture, Event
         time DATETIME,
         organiser_id VARCHAR(20) NOT NULL,
-        FOREIGN KEY (organiser_id) REFERENCES Person (personal_id)
+        location_id INT, -- [NEW] Link to Location
+        FOREIGN KEY (organiser_id) REFERENCES Person (personal_id),
+        FOREIGN KEY (location_id) REFERENCES Location (location_id)
     );
 
 CREATE TABLE
@@ -65,7 +83,10 @@ CREATE TABLE
         type VARCHAR(50), -- Repair, Renovation, Security, Cleaning
         frequency VARCHAR(50),
         location_id INT NOT NULL,
-        FOREIGN KEY (location_id) REFERENCES Location (location_id)
+        active_chemical BOOLEAN, -- [MODIFIED] Attribute
+        contracted_company_id INT, -- [MODIFIED] FK to ExternalCompany
+        FOREIGN KEY (location_id) REFERENCES Location (location_id),
+        FOREIGN KEY (contracted_company_id) REFERENCES ExternalCompany (company_id)
     );
 
 -- Many-to-Many: Person participates in Activity
@@ -87,3 +108,6 @@ CREATE TABLE
         FOREIGN KEY (personal_id) REFERENCES Person (personal_id),
         FOREIGN KEY (school_name) REFERENCES School (school_name)
     );
+
+-- [AFTER-CREATE] Add circular FK
+ALTER TABLE School ADD FOREIGN KEY (hq_location_id) REFERENCES Location (location_id);
