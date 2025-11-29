@@ -65,18 +65,35 @@ function App() {
               <EntityManager
                 title="School Management"
                 endpoint="schools"
-                idField="school_name"
+                idField="department"
                 columns={[
-                  { key: "school_name", label: "School Name" },
-                  { key: "department", label: "Department" },
-                  { key: "faculty", label: "Faculty" },
+                  { key: "department", label: "Dept Abbr" },
+                  { key: "school_name", label: "Department Name" },
+                  { key: "faculty", label: "Faculty/School" },
                   { key: "hq_building", label: "HQ Building" },
                 ]}
                 createFields={[
-                  { name: "school_name", label: "School Name", required: true },
-                  { name: "department", label: "Department", required: true },
-                  { name: "faculty", label: "Faculty" },
-                  { name: "hq_building", label: "HQ Building" },
+                  { name: "department", label: "Dept Abbr", required: true },
+                  { name: "school_name", label: "Department Name", required: true },
+                  {
+                    name: "faculty",
+                    label: "Faculty/School",
+                    type: "cascading-select",
+                    optionsEndpoint: "schools",
+                    optionValue: "faculty",
+                    optionLabel: (s) => s.faculty,
+                    unique: true,
+                    allowNew: true,
+                  },
+                  {
+                    name: "hq_building",
+                    label: "HQ Building",
+                    type: "cascading-select",
+                    optionsEndpoint: "locations",
+                    optionValue: "building",
+                    optionLabel: (loc) => loc.building,
+                    unique: true,
+                  },
                 ]}
               />
             }
@@ -161,7 +178,13 @@ function App() {
                   },
                 ]}
                 createFields={[
-                  { name: "type", label: "Type", required: true },
+                  {
+                    name: "type",
+                    label: "Type",
+                    required: true,
+                    type: "select",
+                    options: ["Inspection", "Security", "Renovation", "Repair", "Cleaning"],
+                  },
                   {
                     name: "frequency",
                     label: "Frequency",
@@ -230,12 +253,12 @@ function App() {
                 endpoint="affiliations"
                 fields={[
                   { name: "personal_id", label: "Personal ID" },
-                  { name: "school_name", label: "School Name" },
+                  { name: "department", label: "Department (Abbr)" },
                 ]}
                 displayColumns={[
                   { key: "person_name", label: "Person" },
-                  { key: "school_name", label: "School" },
-                  { key: "department", label: "Department" },
+                  { key: "department", label: "Dept Abbr" },
+                  { key: "school_name", label: "Department Name" },
                 ]}
               />
             }
