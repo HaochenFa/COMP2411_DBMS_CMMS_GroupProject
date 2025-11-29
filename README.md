@@ -1,6 +1,6 @@
 # PolyU CMMS - Campus Maintenance and Management System
 
-A comprehensive database-driven application for managing campus maintenance, activities, personnel, and facilities at The Hong Kong Polytechnic University.   
+A comprehensive database-driven application for managing campus maintenance, activities, personnel, and facilities at The Hong Kong Polytechnic University.
 
 ## Features
 
