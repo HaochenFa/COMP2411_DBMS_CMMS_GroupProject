@@ -270,6 +270,10 @@ mindmap
       PolyU branded theme
       Interactive dashboards
       Cascading dropdowns
+    Access Control
+      Role-based permissions
+      Three user roles
+      UI permission enforcement
     Developer Tools
       Dev Console SQL interface
       Query history persistence
@@ -292,6 +296,7 @@ mindmap
 | **Deployment** | Docker containerization | Single-command deployment via `docker-compose` |
 | **Cross-platform** | Electron desktop app | Native-like experience on Windows/macOS/Linux |
 | **UX Design** | PolyU-branded theme | Professional red wine and white color scheme |
+| **Access Control** | Role-based permissions | Admin, Executive, Staff roles with granular permissions |
 | **Data Visualization** | Recharts integration | Interactive bar charts, pie charts for analytics |
 | **Developer Tools** | Dev Console | Raw SQL execution with query history persistence |
 | **Safety Features** | Chemical hazard tracking | Safety Search with warning flags for hazardous tasks |
@@ -313,9 +318,9 @@ mindmap
 mindmap
   root((Weaknesses))
     Security
-      No authentication
+      Frontend-only RBAC
       Hardcoded credentials
-      Dev Console unrestricted
+      No backend auth
     Validation
       Limited server-side
       SQL injection risk
@@ -330,7 +335,7 @@ mindmap
 
 | Category | Weakness | Impact |
 |----------|----------|--------|
-| **Authentication** | No authentication/authorization | Anyone can access and modify data |
+| **Backend Authentication** | Frontend-only role-based access control | API endpoints not protected at backend level |
 | **API Security** | Dev Console allows all SQL queries | Vulnerable to data manipulation/deletion |
 | **Database Security** | Hardcoded credentials in docker-compose | Security risk in production |
 | **Input Validation** | Limited server-side validation | Potential for invalid data entry |
@@ -358,7 +363,7 @@ quadrantChart
     quadrant-3 Consider Later
     quadrant-4 Quick Wins
 
-    Authentication: [0.7, 0.95]
+    Backend Auth: [0.7, 0.95]
     Input Validation: [0.4, 0.8]
     Pagination: [0.3, 0.6]
     Audit Logging: [0.5, 0.7]
@@ -370,15 +375,17 @@ quadrantChart
 
 ### 4.2 High Priority 🔴
 
-1. **Implement Authentication & Authorization**
-   - Add JWT-based authentication
-   - Role-based access control (Admin, Manager, Viewer)
-   - Protect Dev Console with admin-only access
+1. **Implement Backend Authentication** ⚠️ (Partially Done)
+   - ✅ Frontend role-based access control implemented (Admin, Executive, Staff)
+   - ✅ UI permission enforcement for CRUD operations
+   - ⏳ Add JWT-based backend authentication
+   - ⏳ Protect API endpoints with role verification
 
 2. **Secure the Dev Console**
-   - Restrict to development mode only
-   - Add query whitelist/blacklist
-   - Implement query auditing
+   - ✅ Restricted to Admin role only via frontend permissions
+   - ⏳ Add backend role verification
+   - ⏳ Add query whitelist/blacklist
+   - ⏳ Implement query auditing
 
 3. **Environment Configuration**
    - Use environment variables for all secrets
@@ -599,6 +606,11 @@ flowchart LR
         REL[🔗 Relationships]
     end
 
+    subgraph Access["Access Control"]
+        RBAC[🔐 Role-Based Access]
+        PERM[👤 User Permissions]
+    end
+
     subgraph Safety["Safety Features"]
         SS[⚠️ Safety Search]
         CH[🧪 Chemical Tracking]
@@ -617,11 +629,62 @@ flowchart LR
         PDF[📄 PDF Reports]
     end
 
+    RBAC --> D & CRUD & REL & DC
     D --> MS & PS & AS & SchS
     PDF --> MS & PS & AS & SchS
 ```
 
-### 6.2 Executive Dashboard
+### 6.2 Role-Based Access Control
+
+**Purpose**: Control user access to features based on their role
+
+```mermaid
+flowchart TB
+    subgraph Roles["User Roles"]
+        Admin[🔑 Admin<br/>Full Access]
+        Exec[📊 Executive<br/>View + Reports]
+        Staff[👷 Staff<br/>Limited Access]
+    end
+
+    subgraph Permissions["Permission Matrix"]
+        P1[canViewDashboard]
+        P2[canViewReports]
+        P3[canViewSafetySearch]
+        P4[canViewDevConsole]
+        P5[canCreate]
+        P6[canUpdate]
+        P7[canDelete]
+        P8[canViewEntities]
+    end
+
+    Admin --> P1 & P2 & P3 & P4 & P5 & P6 & P7 & P8
+    Exec --> P1 & P2 & P3 & P8
+    Staff --> P3 & P8
+```
+
+**Role Permissions**:
+
+| Permission | Admin | Executive | Staff |
+|------------|-------|-----------|-------|
+| View Dashboard | ✅ | ✅ | ❌ |
+| View Reports | ✅ | ✅ | ❌ |
+| View Safety Search | ✅ | ✅ | ✅ |
+| View Dev Console | ✅ | ❌ | ❌ |
+| View Building Supervision | ✅ | ✅ | ❌ |
+| Create Records | ✅ | ❌ | ❌ |
+| Update Records | ✅ | ❌ | ❌ |
+| Delete Records | ✅ | ❌ | ❌ |
+| View Entities | ✅ | ✅ | ✅ |
+
+**Implementation**:
+
+- `RoleContext.jsx` - React Context for role state management
+- `useRole()` hook - Access role and permissions in components
+- `hasPermission()` - Check specific permission for current user
+- UI components conditionally render based on permissions
+- Login page for role selection with localStorage persistence
+
+### 6.3 Executive Dashboard
 
 **Purpose**: Provide real-time insights into campus management metrics
 
@@ -633,7 +696,7 @@ flowchart LR
 - **School Statistics**: Grouped bar chart (people + locations per school)
 - **Maintenance Frequency**: Table view (Daily, Weekly, Monthly)
 
-### 6.3 Entity Management
+### 6.4 Entity Management
 
 **Supported Entities & Fields**:
 
@@ -646,14 +709,15 @@ flowchart LR
 
 **CRUD Features**:
 
-- ✅ Create new records with form validation
-- ✅ Edit existing records inline
-- ✅ Delete with confirmation dialog
+- ✅ Create new records with form validation (Admin only)
+- ✅ Edit existing records inline (Admin only)
+- ✅ Delete with confirmation dialog (Admin only)
 - ✅ Dynamic dropdown options from related tables
 - ✅ Cascading selects (Building → Room)
-- ✅ CSV bulk import
+- ✅ CSV bulk import (Admin only)
+- ✅ Role-based UI - buttons hidden for non-Admin users
 
-### 6.4 Relationship Management
+### 6.5 Relationship Management
 
 ```mermaid
 flowchart LR
@@ -666,7 +730,7 @@ flowchart LR
     end
 ```
 
-### 6.5 Safety Search
+### 6.6 Safety Search
 
 **Purpose**: Identify cleaning activities that may use hazardous chemicals
 
@@ -677,7 +741,7 @@ flowchart LR
 - **Warning Flags**: Red alert with ⚠️ icon for `active_chemical = true`
 - Shows location details (building, room, floor) and frequency
 
-### 6.6 PDF Report Generation
+### 6.7 PDF Report Generation
 
 **Purpose**: Generate professional PDF reports with comprehensive data analysis
 
@@ -700,9 +764,11 @@ flowchart LR
 - Frontend: React component with section checkboxes
 - API: `/api/reports/generate-pdf` returns PDF binary
 
-### 6.7 Developer Console
+### 6.8 Developer Console
 
 **Purpose**: Direct database access for debugging and advanced queries
+
+**Access**: Admin role only (hidden from Executive and Staff users)
 
 **Features**:
 
@@ -714,7 +780,7 @@ flowchart LR
 - Error display with MySQL error messages
 - **Danger Zone Warning**: Alerts users to potential data risks
 
-### 6.8 Business Rule Enforcement
+### 6.9 Business Rule Enforcement
 
 ```mermaid
 flowchart TD
@@ -733,7 +799,7 @@ flowchart TD
     R5 -->|Blocks| LocationDelete[Location Deletion]
 ```
 
-### 6.9 Automated Testing
+### 6.10 Automated Testing
 
 **Purpose**: Ensure code quality and prevent regressions through comprehensive test suites
 

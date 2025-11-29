@@ -122,12 +122,26 @@ def manage_persons():
 
         cursor = conn.cursor(dictionary=True)
         try:
-            # Calculate age dynamically from date_of_birth
-            cursor.execute("""
-                SELECT personal_id, name, gender, date_of_birth, entry_date, supervisor_id,
-                       TIMESTAMPDIFF(YEAR, date_of_birth, CURDATE()) AS age
-                FROM Person
-            """)
+            # Check for role filter parameter
+            role_filter = request.args.get('role')
+
+            if role_filter:
+                # Filter persons by job_role from Profile table
+                cursor.execute("""
+                    SELECT p.personal_id, p.name, p.gender, p.date_of_birth, p.entry_date, p.supervisor_id,
+                           TIMESTAMPDIFF(YEAR, p.date_of_birth, CURDATE()) AS age,
+                           pr.job_role
+                    FROM Person p
+                    JOIN Profile pr ON p.personal_id = pr.personal_id
+                    WHERE pr.job_role = %s
+                """, (role_filter,))
+            else:
+                # Calculate age dynamically from date_of_birth
+                cursor.execute("""
+                    SELECT personal_id, name, gender, date_of_birth, entry_date, supervisor_id,
+                           TIMESTAMPDIFF(YEAR, date_of_birth, CURDATE()) AS age
+                    FROM Person
+                """)
             persons = cursor.fetchall()
             return jsonify(persons), 200
         except mysql.connector.Error as e:
@@ -1094,6 +1108,13 @@ def bulk_import():
 # --- Safety Search Endpoint ---
 @app.route('/api/search/safety', methods=['GET'])
 def safety_search():
+    """Find scheduled cleaning activities with optional time period filtering.
+
+    Query parameters:
+    - building: Filter by building name
+    - start_time: Filter by scheduled_time >= start_time (format: YYYY-MM-DD or YYYY-MM-DDTHH:MM)
+    - end_time: Filter by scheduled_time <= end_time (format: YYYY-MM-DD or YYYY-MM-DDTHH:MM)
+    """
     building = request.args.get('building')
     start_time = request.args.get('start_time')
     end_time = request.args.get('end_time')
@@ -1104,15 +1125,14 @@ def safety_search():
     cursor = conn.cursor(dictionary=True)
 
     try:
-        # Find cleaning activities or maintenance in the given building/time
-        # Note: Maintenance table has frequency but not specific scheduled times in this schema
-        # We will assume 'Maintenance' implies scheduled tasks, and we filter by building.
-        # If Activity table had a 'Cleaning' type we could check that too, but Maintenance is the primary place for 'Cleaning'.
-
         query = """
-            SELECT m.*, l.building, l.room, l.floor
+            SELECT m.maintenance_id, m.type, m.frequency, m.active_chemical,
+                   m.scheduled_time, m.end_time,
+                   l.building, l.room, l.floor, l.campus,
+                   ec.name as company_name
             FROM Maintenance m
             JOIN Location l ON m.location_id = l.location_id
+            LEFT JOIN ExternalCompany ec ON m.contracted_company_id = ec.company_id
             WHERE m.type = 'Cleaning'
         """
         params = []
@@ -1121,21 +1141,92 @@ def safety_search():
             query += " AND l.building = %s"
             params.append(building)
 
-        # Note: Since Maintenance doesn't have a specific 'date/time' field (only frequency),
-        # we can't strictly filter by time range unless we assume some schedule.
-        # However, the requirement is "Find scheduled cleaning activities...".
-        # Given the schema limitations, we will return all cleaning tasks for the building
-        # and let the frontend display them with their frequency.
+        # Filter by time period using scheduled_time column
+        if start_time:
+            query += " AND m.scheduled_time >= %s"
+            params.append(start_time)
+
+        if end_time:
+            query += " AND m.scheduled_time <= %s"
+            params.append(end_time)
+
+        query += " ORDER BY m.scheduled_time ASC"
 
         cursor.execute(query, tuple(params))
         results = cursor.fetchall()
 
-        # Add warning flag
+        # Add warning flag for hazardous chemicals
         for r in results:
             if r.get('active_chemical'):
-                r['warning'] = "WARNING: Hazardous chemicals used!"
+                r['warning'] = "⚠️ WARNING: Hazardous chemicals used!"
+            # Format dates for frontend display
+            if r.get('scheduled_time'):
+                r['scheduled_time'] = r['scheduled_time'].isoformat() if hasattr(
+                    r['scheduled_time'], 'isoformat') else str(r['scheduled_time'])
+            if r.get('end_time'):
+                r['end_time'] = r['end_time'].isoformat() if hasattr(
+                    r['end_time'], 'isoformat') else str(r['end_time'])
 
         return jsonify(results), 200
+    except mysql.connector.Error as e:
+        return jsonify({"error": str(e)}), 400
+    finally:
+        cursor.close()
+        conn.close()
+
+
+# --- Manager Building Report Endpoint ---
+@app.route('/api/reports/manager-buildings', methods=['GET'])
+def get_manager_building_report():
+    """Get report showing managers with their supervised buildings and related maintenance activities."""
+    conn, error_response = get_connection_or_response()
+    if error_response:
+        return error_response
+
+    cursor = conn.cursor(dictionary=True)
+    try:
+        # Get all supervision assignments with manager details and maintenance counts
+        cursor.execute("""
+            SELECT
+                bs.personal_id,
+                p.name as manager_name,
+                bs.building,
+                bs.assigned_date,
+                COUNT(DISTINCT m.maintenance_id) as maintenance_count,
+                SUM(CASE WHEN m.active_chemical = 1 THEN 1 ELSE 0 END) as chemical_maintenance_count
+            FROM BuildingSupervision bs
+            JOIN Person p ON bs.personal_id = p.personal_id
+            LEFT JOIN Location l ON l.building = bs.building
+            LEFT JOIN Maintenance m ON m.location_id = l.location_id
+            GROUP BY bs.supervision_id, bs.personal_id, p.name, bs.building, bs.assigned_date
+            ORDER BY p.name, bs.building
+        """)
+        supervisions = cursor.fetchall()
+
+        # Group by manager for a hierarchical report
+        managers = {}
+        for s in supervisions:
+            mgr_id = s['personal_id']
+            if mgr_id not in managers:
+                managers[mgr_id] = {
+                    'personal_id': mgr_id,
+                    'name': s['manager_name'],
+                    'buildings': []
+                }
+            managers[mgr_id]['buildings'].append({
+                'building': s['building'],
+                'assigned_date': s['assigned_date'].isoformat() if hasattr(s['assigned_date'], 'isoformat') else str(s['assigned_date']) if s['assigned_date'] else None,
+                'maintenance_count': s['maintenance_count'],
+                'chemical_maintenance_count': s['chemical_maintenance_count']
+            })
+
+        return jsonify({
+            'data': list(managers.values()),
+            'summary': {
+                'total_managers': len(managers),
+                'total_supervisions': len(supervisions)
+            }
+        }), 200
     except mysql.connector.Error as e:
         return jsonify({"error": str(e)}), 400
     finally:
@@ -1374,6 +1465,135 @@ def generate_pdf_report():
         return jsonify({"error": str(e)}), 400
     except Exception as e:
         return jsonify({"error": f"PDF generation failed: {str(e)}"}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+
+# =====================
+# Building Supervision Endpoints
+# =====================
+
+
+@app.route('/api/building-supervision', methods=['GET'])
+def get_building_supervisions():
+    """Get all building supervision assignments."""
+    conn, err = get_connection_or_response()
+    if err:
+        return err
+    try:
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("""
+            SELECT bs.supervision_id, bs.personal_id, bs.building, bs.assigned_date,
+                   p.name as manager_name
+            FROM BuildingSupervision bs
+            JOIN Person p ON bs.personal_id = p.personal_id
+            ORDER BY bs.building, p.name
+        """)
+        supervisions = cursor.fetchall()
+        return jsonify({"data": supervisions})
+    except mysql.connector.Error as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+
+@app.route('/api/building-supervision', methods=['POST'])
+def create_building_supervision():
+    """Assign a manager to supervise a building."""
+    data, err = parse_json(required_fields=['personal_id', 'building'])
+    if err:
+        return err
+
+    conn, err = get_connection_or_response()
+    if err:
+        return err
+
+    try:
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT INTO BuildingSupervision (personal_id, building, assigned_date)
+            VALUES (%s, %s, CURRENT_DATE)
+        """, (data['personal_id'], data['building']))
+        conn.commit()
+        return jsonify({"message": "Supervision assignment created", "id": cursor.lastrowid}), 201
+    except mysql.connector.IntegrityError as e:
+        if "Duplicate entry" in str(e):
+            return jsonify({"error": "This manager is already assigned to this building"}), 400
+        return jsonify({"error": str(e)}), 400
+    except mysql.connector.Error as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+
+@app.route('/api/building-supervision/<int:supervision_id>', methods=['DELETE'])
+def delete_building_supervision(supervision_id):
+    """Remove a building supervision assignment."""
+    conn, err = get_connection_or_response()
+    if err:
+        return err
+
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            "DELETE FROM BuildingSupervision WHERE supervision_id = %s", (supervision_id,))
+        if cursor.rowcount == 0:
+            return jsonify({"error": "Supervision assignment not found"}), 404
+        conn.commit()
+        return jsonify({"message": "Supervision assignment deleted"})
+    except mysql.connector.Error as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+
+@app.route('/api/building-supervision/by-manager/<personal_id>', methods=['GET'])
+def get_supervisions_by_manager(personal_id):
+    """Get all buildings supervised by a specific manager."""
+    conn, err = get_connection_or_response()
+    if err:
+        return err
+    try:
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("""
+            SELECT bs.supervision_id, bs.building, bs.assigned_date
+            FROM BuildingSupervision bs
+            WHERE bs.personal_id = %s
+            ORDER BY bs.building
+        """, (personal_id,))
+        supervisions = cursor.fetchall()
+        return jsonify({"data": supervisions})
+    except mysql.connector.Error as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+
+@app.route('/api/building-supervision/by-building/<building>', methods=['GET'])
+def get_supervisions_by_building(building):
+    """Get all managers supervising a specific building."""
+    conn, err = get_connection_or_response()
+    if err:
+        return err
+    try:
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("""
+            SELECT bs.supervision_id, bs.personal_id, bs.assigned_date,
+                   p.name as manager_name
+            FROM BuildingSupervision bs
+            JOIN Person p ON bs.personal_id = p.personal_id
+            WHERE bs.building = %s
+            ORDER BY p.name
+        """, (building,))
+        supervisions = cursor.fetchall()
+        return jsonify({"data": supervisions})
+    except mysql.connector.Error as e:
+        return jsonify({"error": str(e)}), 500
     finally:
         cursor.close()
         conn.close()

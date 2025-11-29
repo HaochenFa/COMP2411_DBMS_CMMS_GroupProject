@@ -2,6 +2,8 @@
 SET
     FOREIGN_KEY_CHECKS = 0;
 
+DROP TABLE IF EXISTS BuildingSupervision;
+
 DROP TABLE IF EXISTS Maintenance;
 
 DROP TABLE IF EXISTS Participation;
@@ -86,13 +88,26 @@ CREATE TABLE
 CREATE TABLE
     Maintenance (
         maintenance_id INT AUTO_INCREMENT PRIMARY KEY,
-        type VARCHAR(50), -- Repair, Renovation, Security, Cleaning
+        type VARCHAR(50), -- Repair, Renovation, Security, Cleaning, Weather Damage, Flood Cleanup, etc.
         frequency VARCHAR(50),
         location_id INT NOT NULL,
         active_chemical BOOLEAN, -- [MODIFIED] Attribute
         contracted_company_id INT, -- [MODIFIED] FK to ExternalCompany
+        scheduled_time DATETIME, -- [NEW] Scheduled start time for time-based filtering
+        end_time DATETIME, -- [NEW] Scheduled end time
         FOREIGN KEY (location_id) REFERENCES Location (location_id),
         FOREIGN KEY (contracted_company_id) REFERENCES ExternalCompany (company_id)
+    );
+
+-- Many-to-Many: Mid-level Manager supervises Building
+CREATE TABLE
+    BuildingSupervision (
+        supervision_id INT AUTO_INCREMENT PRIMARY KEY,
+        personal_id VARCHAR(20) NOT NULL,
+        building VARCHAR(50) NOT NULL,
+        assigned_date DATE DEFAULT (CURRENT_DATE),
+        UNIQUE KEY unique_supervision (personal_id, building),
+        FOREIGN KEY (personal_id) REFERENCES Person (personal_id)
     );
 
 -- Many-to-Many: Person participates in Activity

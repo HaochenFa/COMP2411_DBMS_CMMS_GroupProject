@@ -1,12 +1,14 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
-import { AlertTriangle, Search } from "lucide-react";
+import { AlertTriangle, Search, Calendar } from "lucide-react";
 
 const API_URL = "http://127.0.0.1:5050/api";
 
 export default function SafetySearch() {
   const [buildings, setBuildings] = useState([]);
   const [selectedBuilding, setSelectedBuilding] = useState("");
+  const [startTime, setStartTime] = useState("");
+  const [endTime, setEndTime] = useState("");
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -31,15 +33,24 @@ export default function SafetySearch() {
     setLoading(true);
     setError(null);
     try {
-      const res = await axios.get(`${API_URL}/search/safety`, {
-        params: { building: selectedBuilding },
-      });
+      const params = {};
+      if (selectedBuilding) params.building = selectedBuilding;
+      if (startTime) params.start_time = startTime;
+      if (endTime) params.end_time = endTime;
+
+      const res = await axios.get(`${API_URL}/search/safety`, { params });
       setResults(res.data);
     } catch (err) {
       setError("Search failed: " + (err.response?.data?.error || err.message));
     } finally {
       setLoading(false);
     }
+  };
+
+  const formatDateTime = (dateStr) => {
+    if (!dateStr) return "-";
+    const date = new Date(dateStr);
+    return date.toLocaleString();
   };
 
   return (
@@ -59,15 +70,17 @@ export default function SafetySearch() {
           boxShadow: "0 2px 4px rgba(0,0,0,0.05)",
         }}
       >
-        <form onSubmit={handleSearch} style={{ display: "flex", gap: "15px", alignItems: "end" }}>
-          <div style={{ flex: 1 }}>
+        <form
+          onSubmit={handleSearch}
+          style={{ display: "flex", gap: "15px", alignItems: "end", flexWrap: "wrap" }}
+        >
+          <div style={{ flex: 1, minWidth: "180px" }}>
             <label style={{ display: "block", marginBottom: "8px", fontWeight: "500" }}>
               Building
             </label>
             <select
               value={selectedBuilding}
               onChange={(e) => setSelectedBuilding(e.target.value)}
-              required
               style={{
                 width: "100%",
                 padding: "8px",
@@ -75,13 +88,47 @@ export default function SafetySearch() {
                 border: "1px solid #ddd",
               }}
             >
-              <option value="">Select Building</option>
+              <option value="">All Buildings</option>
               {buildings.map((b) => (
                 <option key={b} value={b}>
                   {b}
                 </option>
               ))}
             </select>
+          </div>
+          <div style={{ flex: 1, minWidth: "180px" }}>
+            <label style={{ display: "block", marginBottom: "8px", fontWeight: "500" }}>
+              <Calendar size={14} style={{ marginRight: "4px", verticalAlign: "middle" }} />
+              Start Date/Time
+            </label>
+            <input
+              type="datetime-local"
+              value={startTime}
+              onChange={(e) => setStartTime(e.target.value)}
+              style={{
+                width: "100%",
+                padding: "8px",
+                borderRadius: "4px",
+                border: "1px solid #ddd",
+              }}
+            />
+          </div>
+          <div style={{ flex: 1, minWidth: "180px" }}>
+            <label style={{ display: "block", marginBottom: "8px", fontWeight: "500" }}>
+              <Calendar size={14} style={{ marginRight: "4px", verticalAlign: "middle" }} />
+              End Date/Time
+            </label>
+            <input
+              type="datetime-local"
+              value={endTime}
+              onChange={(e) => setEndTime(e.target.value)}
+              style={{
+                width: "100%",
+                padding: "8px",
+                borderRadius: "4px",
+                border: "1px solid #ddd",
+              }}
+            />
           </div>
           <button
             type="submit"
@@ -103,7 +150,9 @@ export default function SafetySearch() {
                 <tr>
                   <th>Type</th>
                   <th>Location</th>
+                  <th>Scheduled Time</th>
                   <th>Frequency</th>
+                  <th>Company</th>
                   <th>Safety Status</th>
                 </tr>
               </thead>
@@ -114,7 +163,9 @@ export default function SafetySearch() {
                     <td>
                       {item.building} - {item.room} (Floor {item.floor})
                     </td>
+                    <td>{formatDateTime(item.scheduled_time)}</td>
                     <td>{item.frequency}</td>
+                    <td>{item.company_name || "-"}</td>
                     <td>
                       {item.warning ? (
                         <span

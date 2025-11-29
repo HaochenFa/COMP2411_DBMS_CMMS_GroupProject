@@ -33,6 +33,20 @@ A comprehensive database-driven application for managing campus maintenance, act
   - CSV bulk export for all entity and relationship tables
   - Date-stamped export files with proper CSV escaping
 
+### Role-Based Access Control
+
+The system implements a frontend role-based access control system with three user roles:
+
+| Role | Dashboard | Reports | Safety Search | Dev Console | Entity CRUD | Building Supervision |
+|------|-----------|---------|---------------|-------------|-------------|---------------------|
+| **Admin** | ✅ | ✅ | ✅ | ✅ | ✅ Create/Update/Delete | ✅ |
+| **Executive** | ✅ | ✅ | ✅ | ❌ | ❌ View Only | ✅ |
+| **Staff** | ❌ | ❌ | ✅ | ❌ | ❌ View Only | ❌ |
+
+- **Admin**: Full access to all features including Dev Console and CRUD operations
+- **Executive**: View access to dashboards, reports, and entities; no modification rights
+- **Staff**: Limited to Safety Search and viewing entity data
+
 ### Technical Features
 
 - **Electron Desktop App**: Standalone desktop application with integrated backend and frontend
@@ -584,7 +598,7 @@ describe('Example Component', () => {
 
 🚧 **Known Limitations:**
 
-- No user authentication/authorization system
+- Frontend-only role-based access control (no backend authentication)
 - Limited error handling in some edge cases
 
 ## Troubleshooting
