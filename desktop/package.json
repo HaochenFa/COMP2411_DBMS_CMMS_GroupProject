@@ -4,9 +4,12 @@
   "private": true,
   "main": "main.js",
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+    "test": "vitest",
+    "test:coverage": "vitest --coverage"
   },
   "devDependencies": {
-    "electron": "^39.2.4"
+    "electron": "^39.2.4",
+    "vitest": "^3.2.4"
   }
 }
