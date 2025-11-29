@@ -169,6 +169,7 @@ function DevConsoleContent() {
                 resize: "none",
                 background: "#fafafa",
                 borderRadius: "6px 6px 0 0",
+                color: "#333",
               }}
             />
             <div

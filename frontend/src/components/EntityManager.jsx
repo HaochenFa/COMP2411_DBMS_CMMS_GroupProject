@@ -244,6 +244,27 @@ export default function EntityManager({ title, endpoint, columns, idField, creat
                 options = dynamicOptions[field.name] || [];
               }
 
+              // If allowNew is true, use input with datalist for autocomplete + new entries
+              if (field.allowNew) {
+                return (
+                  <div key={field.name} style={{ flex: "1 1 200px" }}>
+                    <input
+                      type="text"
+                      list={`${field.name}-list`}
+                      value={newItem[field.name] || ""}
+                      onChange={(e) => setNewItem({ ...newItem, [field.name]: e.target.value })}
+                      placeholder={field.label}
+                      required={field.required}
+                    />
+                    <datalist id={`${field.name}-list`}>
+                      {options.map((opt) => (
+                        <option key={opt.value} value={opt.value} />
+                      ))}
+                    </datalist>
+                  </div>
+                );
+              }
+
               return (
                 <div key={field.name} style={{ flex: "1 1 200px" }}>
                   <select

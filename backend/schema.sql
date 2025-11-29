@@ -46,9 +46,9 @@ CREATE TABLE
 
 CREATE TABLE
     School (
-        school_name VARCHAR(100) PRIMARY KEY,
-        department VARCHAR(100) NOT NULL UNIQUE,
-        faculty VARCHAR(100),
+        department VARCHAR(20) PRIMARY KEY, -- Dept abbreviation, e.g., ENG, COMP
+        dept_name VARCHAR(100) NOT NULL, -- Full department name
+        faculty VARCHAR(100), -- Faculty/School that supervises this department
         hq_building VARCHAR(100) -- Building name for school headquarters
     );
 
@@ -68,8 +68,8 @@ CREATE TABLE
         building VARCHAR(50), -- Simple building name attribute
         type VARCHAR(20), -- Room, Square, Gate, Level
         campus VARCHAR(50),
-        school_name VARCHAR(100),
-        FOREIGN KEY (school_name) REFERENCES School (school_name)
+        department VARCHAR(20),
+        FOREIGN KEY (department) REFERENCES School (department)
     );
 
 CREATE TABLE
@@ -105,14 +105,14 @@ CREATE TABLE
         FOREIGN KEY (activity_id) REFERENCES Activity (activity_id)
     );
 
--- Many-to-Many: Person affiliated to School
+-- Many-to-Many: Person affiliated to Department
 CREATE TABLE
     Affiliation (
         personal_id VARCHAR(20),
-        school_name VARCHAR(100),
-        PRIMARY KEY (personal_id, school_name),
+        department VARCHAR(20),
+        PRIMARY KEY (personal_id, department),
         FOREIGN KEY (personal_id) REFERENCES Person (personal_id),
-        FOREIGN KEY (school_name) REFERENCES School (school_name)
+        FOREIGN KEY (department) REFERENCES School (department)
     );
 
 -- Note: hq_building is now a simple VARCHAR, no FK needed
