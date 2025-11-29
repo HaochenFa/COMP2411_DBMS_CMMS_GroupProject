@@ -1,7 +1,8 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, Response
 from flask_cors import CORS
 from db import get_db_connection, init_db, is_db_initialized
 import mysql.connector
+from datetime import datetime
 
 app = Flask(__name__)
 CORS(app)
@@ -1137,6 +1138,242 @@ def safety_search():
         return jsonify(results), 200
     except mysql.connector.Error as e:
         return jsonify({"error": str(e)}), 400
+    finally:
+        cursor.close()
+        conn.close()
+
+
+# --- PDF Report Generation Endpoints ---
+
+@app.route('/api/reports/comprehensive-data', methods=['GET'])
+def get_comprehensive_report_data():
+    """Get all data needed for comprehensive PDF report generation."""
+    conn, error_response = get_connection_or_response()
+    if error_response:
+        return error_response
+
+    cursor = conn.cursor(dictionary=True)
+    try:
+        report_data = {}
+
+        # Summary counts
+        cursor.execute("SELECT COUNT(*) as count FROM Person")
+        total_persons = cursor.fetchone()['count']
+
+        cursor.execute(
+            "SELECT COUNT(*) as count FROM School WHERE faculty IS NOT NULL")
+        total_schools = cursor.fetchone()['count']
+
+        cursor.execute("SELECT COUNT(*) as count FROM Activity")
+        total_activities = cursor.fetchone()['count']
+
+        cursor.execute("SELECT COUNT(*) as count FROM Maintenance")
+        total_maintenance = cursor.fetchone()['count']
+
+        cursor.execute("SELECT COUNT(*) as count FROM Location")
+        total_locations = cursor.fetchone()['count']
+
+        report_data['summary'] = {
+            'total_persons': total_persons,
+            'total_schools': total_schools,
+            'total_activities': total_activities,
+            'total_maintenance': total_maintenance,
+            'total_locations': total_locations,
+            'generated_at': datetime.now().isoformat()
+        }
+
+        # Maintenance summary
+        cursor.execute("""
+            SELECT m.type, l.building, l.campus, COUNT(*) AS count
+            FROM Maintenance m
+            JOIN Location l ON m.location_id = l.location_id
+            GROUP BY m.type, l.building, l.campus
+            ORDER BY count DESC
+        """)
+        report_data['maintenance_summary'] = cursor.fetchall()
+
+        # People summary
+        cursor.execute("""
+            SELECT pr.job_role, pr.status, COUNT(*) AS count
+            FROM Profile pr
+            GROUP BY pr.job_role, pr.status
+            ORDER BY pr.job_role, count DESC
+        """)
+        report_data['people_summary'] = cursor.fetchall()
+
+        # Activities summary
+        cursor.execute("""
+            SELECT a.type, p.name AS organiser_name, COUNT(*) AS activity_count
+            FROM Activity a
+            JOIN Person p ON a.organiser_id = p.personal_id
+            GROUP BY a.type, p.name
+            ORDER BY activity_count DESC
+        """)
+        report_data['activities_summary'] = cursor.fetchall()
+
+        # School stats
+        cursor.execute("""
+            SELECT s.department, s.dept_name AS school_name, s.faculty,
+                   COUNT(DISTINCT a.personal_id) AS affiliated_people,
+                   COUNT(DISTINCT l.location_id) AS locations_count
+            FROM School s
+            LEFT JOIN Affiliation a ON s.department = a.department
+            LEFT JOIN Location l ON s.department = l.department
+            GROUP BY s.department, s.dept_name, s.faculty
+        """)
+        report_data['school_stats'] = cursor.fetchall()
+
+        # Maintenance frequency
+        cursor.execute("""
+            SELECT frequency, type, COUNT(*) AS task_count
+            FROM Maintenance
+            GROUP BY frequency, type
+            ORDER BY frequency, task_count DESC
+        """)
+        report_data['maintenance_frequency'] = cursor.fetchall()
+
+        # Safety data (cleaning tasks with chemicals)
+        cursor.execute("""
+            SELECT m.*, l.building, l.room, l.floor
+            FROM Maintenance m
+            JOIN Location l ON m.location_id = l.location_id
+            WHERE m.type = 'Cleaning'
+        """)
+        report_data['safety_data'] = cursor.fetchall()
+
+        return jsonify(report_data), 200
+
+    except mysql.connector.Error as e:
+        return jsonify({"error": str(e)}), 400
+    finally:
+        cursor.close()
+        conn.close()
+
+
+@app.route('/api/reports/generate-pdf', methods=['POST'])
+def generate_pdf_report():
+    """Generate and return a PDF report."""
+    # Import here to avoid circular imports and allow graceful failure
+    try:
+        from pdf_service import generate_report
+    except ImportError as e:
+        return jsonify({
+            "error": "PDF generation not available. Please install required packages: "
+                     "pip install reportlab matplotlib pandas Pillow"
+        }), 500
+
+    # Parse request options
+    data = request.get_json(silent=True) or {}
+    sections = data.get('sections', [
+        'executive_summary', 'maintenance', 'personnel',
+        'activities', 'schools', 'safety'
+    ])
+
+    # Fetch comprehensive data
+    conn, error_response = get_connection_or_response()
+    if error_response:
+        return error_response
+
+    cursor = conn.cursor(dictionary=True)
+    try:
+        report_data = {}
+
+        # Summary counts
+        cursor.execute("SELECT COUNT(*) as count FROM Person")
+        total_persons = cursor.fetchone()['count']
+
+        cursor.execute(
+            "SELECT COUNT(*) as count FROM School WHERE faculty IS NOT NULL")
+        total_schools = cursor.fetchone()['count']
+
+        cursor.execute("SELECT COUNT(*) as count FROM Activity")
+        total_activities = cursor.fetchone()['count']
+
+        cursor.execute("SELECT COUNT(*) as count FROM Maintenance")
+        total_maintenance = cursor.fetchone()['count']
+
+        report_data['summary'] = {
+            'total_persons': total_persons,
+            'total_schools': total_schools,
+            'total_activities': total_activities,
+            'total_maintenance': total_maintenance,
+        }
+
+        # Maintenance summary
+        cursor.execute("""
+            SELECT m.type, l.building, l.campus, COUNT(*) AS count
+            FROM Maintenance m
+            JOIN Location l ON m.location_id = l.location_id
+            GROUP BY m.type, l.building, l.campus
+            ORDER BY count DESC
+        """)
+        report_data['maintenance_summary'] = cursor.fetchall()
+
+        # People summary
+        cursor.execute("""
+            SELECT pr.job_role, pr.status, COUNT(*) AS count
+            FROM Profile pr
+            GROUP BY pr.job_role, pr.status
+        """)
+        report_data['people_summary'] = cursor.fetchall()
+
+        # Activities summary
+        cursor.execute("""
+            SELECT a.type, p.name AS organiser_name, COUNT(*) AS activity_count
+            FROM Activity a
+            JOIN Person p ON a.organiser_id = p.personal_id
+            GROUP BY a.type, p.name
+            ORDER BY activity_count DESC
+        """)
+        report_data['activities_summary'] = cursor.fetchall()
+
+        # School stats
+        cursor.execute("""
+            SELECT s.department, s.dept_name AS school_name, s.faculty,
+                   COUNT(DISTINCT a.personal_id) AS affiliated_people,
+                   COUNT(DISTINCT l.location_id) AS locations_count
+            FROM School s
+            LEFT JOIN Affiliation a ON s.department = a.department
+            LEFT JOIN Location l ON s.department = l.department
+            GROUP BY s.department, s.dept_name, s.faculty
+        """)
+        report_data['school_stats'] = cursor.fetchall()
+
+        # Maintenance frequency
+        cursor.execute("""
+            SELECT frequency, type, COUNT(*) AS task_count
+            FROM Maintenance
+            GROUP BY frequency, type
+        """)
+        report_data['maintenance_frequency'] = cursor.fetchall()
+
+        # Safety data
+        cursor.execute("""
+            SELECT m.*, l.building, l.room, l.floor
+            FROM Maintenance m
+            JOIN Location l ON m.location_id = l.location_id
+            WHERE m.type = 'Cleaning'
+        """)
+        report_data['safety_data'] = cursor.fetchall()
+
+        # Generate PDF
+        pdf_buffer = generate_report(report_data, sections)
+
+        # Return PDF response
+        filename = f"CMMS_Report_{datetime.now().strftime('%Y-%m-%d')}.pdf"
+        return Response(
+            pdf_buffer.getvalue(),
+            mimetype='application/pdf',
+            headers={
+                'Content-Disposition': f'attachment; filename="{filename}"',
+                'Content-Type': 'application/pdf'
+            }
+        )
+
+    except mysql.connector.Error as e:
+        return jsonify({"error": str(e)}), 400
+    except Exception as e:
+        return jsonify({"error": f"PDF generation failed: {str(e)}"}), 500
     finally:
         cursor.close()
         conn.close()

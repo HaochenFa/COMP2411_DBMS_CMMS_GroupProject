@@ -17,6 +17,13 @@ A comprehensive database-driven application for managing campus maintenance, act
   - **Participations** - Person-Activity relationships
   - **Affiliations** - Person-School relationships
 - **Safety Search**: Search for cleaning activities with chemical hazards by building location
+- **Report Generation & Export**: Generate comprehensive PDF reports with:
+  - Executive summary with KPI metrics
+  - Maintenance analysis with charts
+  - Personnel overview by role/status
+  - Activities and school statistics
+  - Safety report with chemical hazard analysis
+  - PolyU branded styling and professional formatting
 - **Dev Console**: Full SQL query interface with:
   - Support for all SQL operations (SELECT, INSERT, UPDATE, DELETE, etc.)
   - Warning popup for dangerous operations before execution
@@ -249,6 +256,7 @@ Ensure your MySQL server is running. Create a database (default name `cmms_db`) 
 │   │   │   ├── Dashboard.jsx           # Executive dashboard with charts
 │   │   │   ├── EntityManager.jsx       # Generic CRUD with import/export
 │   │   │   ├── RelationshipManager.jsx # Relationship management with export
+│   │   │   ├── ReportGenerator.jsx     # PDF report generation interface
 │   │   │   ├── SafetySearch.jsx        # Chemical hazard search
 │   │   │   ├── DevConsole.jsx          # SQL query interface with warnings
 │   │   │   └── Layout.jsx              # App layout and navigation
@@ -322,10 +330,15 @@ The backend provides RESTful API endpoints for:
 
 ### Dashboard Statistics
 
-- `/api/maintenance-summary` - Maintenance tasks by type
-- `/api/people-summary` - People distribution by role
-- `/api/activities-summary` - Activities by type
-- `/api/school-stats` - School statistics
+- `/api/reports/maintenance-summary` - Maintenance tasks by type
+- `/api/reports/people-summary` - People distribution by role
+- `/api/reports/activities-summary` - Activities by type
+- `/api/reports/school-stats` - School statistics
+
+### Report Generation
+
+- `/api/reports/comprehensive-data` - Get all report data (JSON)
+- `/api/reports/generate-pdf` - Generate and download PDF report
 
 ## Development Notes
 
@@ -552,6 +565,11 @@ describe('Example Component', () => {
 - Entity management interfaces (People, Schools, Locations, Activities, Maintenance)
 - Relationship management (Participations, Affiliations)
 - Safety search functionality for chemical hazards
+- **PDF Report Generation & Export** with:
+  - Selectable report sections (Executive Summary, Maintenance, Personnel, Activities, Schools, Safety)
+  - PolyU branded styling with professional formatting
+  - Data tables and chart visualizations (bar charts, pie charts)
+  - Automatic PDF download
 - Dev Console with full SQL support and safety warnings
 - CSV bulk import and export functionality
 - Docker containerization with MySQL, Flask, React
