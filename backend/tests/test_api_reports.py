@@ -13,12 +13,13 @@ class TestMaintenanceSummaryReport:
         """Test GET /api/reports/maintenance-summary returns summary."""
         mock_conn, mock_cursor = mock_get_db_connection
         mock_cursor.fetchall.return_value = [
-            {'type': 'Cleaning', 'building': 'Block A', 'campus': 'Main', 'count': 5},
+            {'type': 'Cleaning', 'building': 'Block A',
+                'campus': 'Main', 'count': 5},
             {'type': 'Repair', 'building': 'Block B', 'campus': 'Main', 'count': 3}
         ]
-        
+
         response = client.get('/api/reports/maintenance-summary')
-        
+
         assert response.status_code == 200
         data = json.loads(response.data)
         assert len(data) == 2
@@ -35,9 +36,9 @@ class TestPeopleSummaryReport:
             {'job_role': 'Manager', 'status': 'Current', 'count': 10},
             {'job_role': 'Worker', 'status': 'Current', 'count': 50}
         ]
-        
+
         response = client.get('/api/reports/people-summary')
-        
+
         assert response.status_code == 200
         data = json.loads(response.data)
         assert len(data) == 2
@@ -52,9 +53,9 @@ class TestActivitiesSummaryReport:
         mock_cursor.fetchall.return_value = [
             {'type': 'Seminar', 'organiser_name': 'John Doe', 'activity_count': 5}
         ]
-        
+
         response = client.get('/api/reports/activities-summary')
-        
+
         assert response.status_code == 200
         data = json.loads(response.data)
         assert len(data) == 1
@@ -71,9 +72,9 @@ class TestSchoolStatsReport:
             {'department': 'COMP', 'school_name': 'Computing', 'faculty': 'Engineering',
              'affiliated_people': 25, 'locations_count': 10}
         ]
-        
+
         response = client.get('/api/reports/school-stats')
-        
+
         assert response.status_code == 200
         data = json.loads(response.data)
         assert len(data) == 1
@@ -90,9 +91,9 @@ class TestMaintenanceFrequencyReport:
             {'frequency': 'Daily', 'type': 'Cleaning', 'task_count': 20},
             {'frequency': 'Weekly', 'type': 'Repair', 'task_count': 10}
         ]
-        
+
         response = client.get('/api/reports/maintenance-frequency')
-        
+
         assert response.status_code == 200
         data = json.loads(response.data)
         assert len(data) == 2
@@ -105,7 +106,7 @@ class TestHealthCheck:
     def test_health_check_success(self, client):
         """Test GET /api/health returns healthy status."""
         response = client.get('/api/health')
-        
+
         assert response.status_code == 200
         data = json.loads(response.data)
         assert data['status'] == 'healthy'
@@ -118,26 +119,27 @@ class TestQueryEndpoint:
         """Test POST /api/query with SELECT statement."""
         mock_conn, mock_cursor = mock_get_db_connection
         mock_cursor.fetchall.return_value = [{'name': 'John'}]
-        
+
         response = client.post(
             '/api/query',
             data=json.dumps({'query': 'SELECT * FROM Person'}),
             content_type='application/json'
         )
-        
+
         assert response.status_code == 200
 
     def test_write_query_success(self, client, mock_get_db_connection):
         """Test POST /api/query with write statement."""
         mock_conn, mock_cursor = mock_get_db_connection
         mock_cursor.rowcount = 1
-        
+
         response = client.post(
             '/api/query',
-            data=json.dumps({'query': "UPDATE Person SET name='Jane' WHERE personal_id='P001'"}),
+            data=json.dumps(
+                {'query': "UPDATE Person SET name='Jane' WHERE personal_id='P001'"}),
             content_type='application/json'
         )
-        
+
         assert response.status_code == 200
         data = json.loads(response.data)
         assert 'rows_affected' in data
@@ -145,13 +147,13 @@ class TestQueryEndpoint:
     def test_empty_query_fails(self, client, mock_get_db_connection):
         """Test POST /api/query with empty query fails."""
         mock_conn, mock_cursor = mock_get_db_connection
-        
+
         response = client.post(
             '/api/query',
             data=json.dumps({'query': '   '}),
             content_type='application/json'
         )
-        
+
         assert response.status_code == 400
 
     def test_missing_query_fails(self, client):
@@ -161,6 +163,5 @@ class TestQueryEndpoint:
             data=json.dumps({}),
             content_type='application/json'
         )
-        
-        assert response.status_code == 400
 
+        assert response.status_code == 400

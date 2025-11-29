@@ -9,11 +9,11 @@ echo "🚀 Starting PolyU CMMS..."
 # 0. Start MySQL
 echo "🗄️  Starting MySQL..."
 if command -v brew >/dev/null 2>&1; then
-    brew services start mysql || echo "MySQL might already be running or failed to start via brew."
+	brew services start mysql || echo "MySQL might already be running or failed to start via brew."
 elif command -v mysql.server >/dev/null 2>&1; then
-    mysql.server start || echo "MySQL might already be running."
+	mysql.server start || echo "MySQL might already be running."
 else
-    echo "⚠️  Could not find a way to auto-start MySQL. Please ensure it is running."
+	echo "⚠️  Could not find a way to auto-start MySQL. Please ensure it is running."
 fi
 
 # Wait for MySQL to be ready
@@ -21,13 +21,13 @@ echo "⏳ Waiting for MySQL to be ready..."
 MAX_RETRIES=30
 COUNT=0
 while ! mysqladmin ping -h "localhost" --silent; do
-    sleep 1
-    COUNT=$((COUNT+1))
-    if [ $COUNT -ge $MAX_RETRIES ]; then
-        echo "❌ MySQL failed to start or is not reachable."
-        exit 1
-    fi
-    echo -n "."
+	sleep 1
+	COUNT=$((COUNT + 1))
+	if [ $COUNT -ge $MAX_RETRIES ]; then
+		echo "❌ MySQL failed to start or is not reachable."
+		exit 1
+	fi
+	echo -n "."
 done
 echo "✅ MySQL is up!"
 
@@ -35,11 +35,11 @@ echo "✅ MySQL is up!"
 echo "📦 Launching Backend (Port 5050)..."
 cd backend
 if [ ! -d "venv" ]; then
-    echo "Creating Python virtual environment..."
-    python3 -m venv venv
+	echo "Creating Python virtual environment..."
+	python3 -m venv venv
 fi
 source venv/bin/activate
-pip install -r requirements.txt > /dev/null 2>&1
+pip install -r requirements.txt >/dev/null 2>&1
 python3 app.py &
 BACKEND_PID=$!
 cd ..
@@ -47,7 +47,7 @@ cd ..
 # 2. Start Frontend
 echo "💻 Launching Frontend..."
 cd frontend
-npm install > /dev/null 2>&1
+npm install >/dev/null 2>&1
 npm run dev &
 FRONTEND_PID=$!
 cd ..
@@ -55,7 +55,7 @@ cd ..
 # 3. Start Desktop App (Electron)
 echo "🖥️  Launching Desktop App..."
 cd desktop
-npm install > /dev/null 2>&1
+npm install >/dev/null 2>&1
 npm start &
 DESKTOP_PID=$!
 cd ..

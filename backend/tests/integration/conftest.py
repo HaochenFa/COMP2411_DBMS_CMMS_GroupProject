@@ -22,20 +22,21 @@ def db_connection():
     """Create a database connection for integration tests."""
     # First connect without database to create it if needed
     config_no_db = {k: v for k, v in TEST_DB_CONFIG.items() if k != 'database'}
-    
+
     try:
         conn = mysql.connector.connect(**config_no_db)
         cursor = conn.cursor()
-        
+
         # Create test database if it doesn't exist
-        cursor.execute(f"CREATE DATABASE IF NOT EXISTS {TEST_DB_CONFIG['database']}")
+        cursor.execute(
+            f"CREATE DATABASE IF NOT EXISTS {TEST_DB_CONFIG['database']}")
         cursor.close()
         conn.close()
-        
+
         # Connect to test database
         conn = mysql.connector.connect(**TEST_DB_CONFIG)
         yield conn
-        
+
         conn.close()
     except mysql.connector.Error as e:
         pytest.skip(f"Database not available for integration tests: {e}")
@@ -45,22 +46,22 @@ def db_connection():
 def clean_db(db_connection):
     """Clean the database before each test."""
     cursor = db_connection.cursor()
-    
+
     # Disable foreign key checks for cleanup
     cursor.execute("SET FOREIGN_KEY_CHECKS = 0")
-    
+
     # Get all tables
     cursor.execute("SHOW TABLES")
     tables = cursor.fetchall()
-    
+
     # Truncate all tables
     for (table,) in tables:
         cursor.execute(f"TRUNCATE TABLE {table}")
-    
+
     cursor.execute("SET FOREIGN_KEY_CHECKS = 1")
     db_connection.commit()
     cursor.close()
-    
+
     yield db_connection
 
 
@@ -73,9 +74,9 @@ def integration_client(clean_db):
     os.environ['DB_USER'] = TEST_DB_CONFIG['user']
     os.environ['DB_PASSWORD'] = TEST_DB_CONFIG['password']
     os.environ['DB_NAME'] = TEST_DB_CONFIG['database']
-    
+
     app.config['TESTING'] = True
-    
+
     with app.test_client() as client:
         yield client
 
@@ -113,4 +114,3 @@ def sample_location_data():
         'type': 'Classroom',
         'campus': 'Main',
     }
-

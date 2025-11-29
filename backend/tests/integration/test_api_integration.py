@@ -28,14 +28,14 @@ class TestPersonIntegration:
             content_type='application/json'
         )
         assert response.status_code == 201
-        
+
         # Read (list)
         response = integration_client.get('/api/persons')
         assert response.status_code == 200
         data = json.loads(response.data)
         assert len(data) >= 1
         assert any(p['personal_id'] == 'TEST001' for p in data)
-        
+
         # Update
         response = integration_client.put(
             f"/api/persons/{sample_person_data['personal_id']}",
@@ -43,19 +43,19 @@ class TestPersonIntegration:
             content_type='application/json'
         )
         assert response.status_code == 200
-        
+
         # Verify update
         response = integration_client.get('/api/persons')
         data = json.loads(response.data)
         person = next(p for p in data if p['personal_id'] == 'TEST001')
         assert person['name'] == 'Updated Name'
-        
+
         # Delete
         response = integration_client.delete(
             f"/api/persons/{sample_person_data['personal_id']}"
         )
         assert response.status_code == 200
-        
+
         # Verify deletion
         response = integration_client.get('/api/persons')
         data = json.loads(response.data)
@@ -74,13 +74,13 @@ class TestSchoolIntegration:
             content_type='application/json'
         )
         assert response.status_code == 201
-        
+
         # Read
         response = integration_client.get('/api/schools')
         assert response.status_code == 200
         data = json.loads(response.data)
         assert any(s['department'] == 'TEST' for s in data)
-        
+
         # Update
         response = integration_client.put(
             f"/api/schools/{sample_school_data['department']}",
@@ -88,7 +88,7 @@ class TestSchoolIntegration:
             content_type='application/json'
         )
         assert response.status_code == 200
-        
+
         # Delete
         response = integration_client.delete(
             f"/api/schools/{sample_school_data['department']}"
@@ -108,7 +108,7 @@ class TestLocationIntegration:
             content_type='application/json'
         )
         assert response.status_code == 201
-        
+
         # Read
         response = integration_client.get('/api/locations')
         assert response.status_code == 200
@@ -116,7 +116,7 @@ class TestLocationIntegration:
         assert len(data) >= 1
         location = data[0]
         location_id = location['location_id']
-        
+
         # Update
         response = integration_client.put(
             f'/api/locations/{location_id}',
@@ -124,7 +124,7 @@ class TestLocationIntegration:
             content_type='application/json'
         )
         assert response.status_code == 200
-        
+
         # Delete
         response = integration_client.delete(f'/api/locations/{location_id}')
         assert response.status_code == 200
@@ -157,4 +157,3 @@ class TestReportsIntegration:
         assert response.status_code == 200
         data = json.loads(response.data)
         assert isinstance(data, list)
-
