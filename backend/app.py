@@ -299,7 +299,7 @@ def manage_profiles():
         conn.close()
 
 
-# --- School Endpoints ---
+# --- School/Department Endpoints ---
 @app.route('/api/schools', methods=['GET', 'POST'])
 def manage_schools():
     if request.method == 'GET':
@@ -309,9 +309,9 @@ def manage_schools():
 
         cursor = conn.cursor(dictionary=True)
         try:
-            # Only show legitimate schools (those with a faculty assigned)
+            # Return with school_name alias for frontend compatibility
             cursor.execute("""
-                SELECT school_name, department, faculty, hq_building
+                SELECT department, dept_name AS school_name, faculty, hq_building
                 FROM School
                 WHERE faculty IS NOT NULL
             """)
@@ -323,9 +323,9 @@ def manage_schools():
             cursor.close()
             conn.close()
 
-    # POST
+    # POST - department is now the PK, school_name is the dept_name
     data, error_response = parse_json(
-        required_fields=['school_name', 'department'])
+        required_fields=['department', 'school_name'])
     if error_response:
         return error_response
 
@@ -335,12 +335,12 @@ def manage_schools():
 
     cursor = conn.cursor(dictionary=True)
     try:
-        sql = "INSERT INTO School (school_name, department, faculty, hq_building) VALUES (%s, %s, %s, %s)"
-        val = (data['school_name'], data['department'],
+        sql = "INSERT INTO School (department, dept_name, faculty, hq_building) VALUES (%s, %s, %s, %s)"
+        val = (data['department'], data['school_name'],
                data.get('faculty'), data.get('hq_building'))
         cursor.execute(sql, val)
         conn.commit()
-        return jsonify({"message": "School created"}), 201
+        return jsonify({"message": "Department created"}), 201
     except mysql.connector.Error as e:
         conn.rollback()
         return jsonify({"error": str(e)}), 400
@@ -360,16 +360,16 @@ def manage_school_item(id):
         try:
             # Delete related affiliations first
             cursor.execute(
-                "DELETE FROM Affiliation WHERE school_name = %s", (id,))
-            # Set school_name to NULL for related locations
+                "DELETE FROM Affiliation WHERE department = %s", (id,))
+            # Set department to NULL for related locations
             cursor.execute(
-                "UPDATE Location SET school_name = NULL WHERE school_name = %s", (id,))
-            # Delete the school
-            cursor.execute("DELETE FROM School WHERE school_name = %s", (id,))
+                "UPDATE Location SET department = NULL WHERE department = %s", (id,))
+            # Delete the department
+            cursor.execute("DELETE FROM School WHERE department = %s", (id,))
             conn.commit()
             if cursor.rowcount == 0:
-                return jsonify({"error": "School not found"}), 404
-            return jsonify({"message": "School deleted"}), 200
+                return jsonify({"error": "Department not found"}), 404
+            return jsonify({"message": "Department deleted"}), 200
         except mysql.connector.Error as e:
             conn.rollback()
             return jsonify({"error": str(e)}), 400
@@ -377,7 +377,7 @@ def manage_school_item(id):
             cursor.close()
             conn.close()
 
-    # PUT
+    # PUT - school_name in data maps to dept_name in DB
     data, error_response = parse_json()
     if error_response:
         return error_response
@@ -385,21 +385,23 @@ def manage_school_item(id):
     try:
         fields = []
         values = []
-        for key in ['department', 'faculty', 'hq_building']:
+        field_mapping = {'school_name': 'dept_name',
+                         'faculty': 'faculty', 'hq_building': 'hq_building'}
+        for key, db_field in field_mapping.items():
             if key in data:
-                fields.append(f"{key} = %s")
+                fields.append(f"{db_field} = %s")
                 values.append(data[key])
 
         if not fields:
             return jsonify({"error": "No fields to update"}), 400
 
         values.append(id)
-        sql = f"UPDATE School SET {', '.join(fields)} WHERE school_name = %s"
+        sql = f"UPDATE School SET {', '.join(fields)} WHERE department = %s"
         cursor.execute(sql, tuple(values))
         conn.commit()
         if cursor.rowcount == 0:
-            return jsonify({"error": "School not found"}), 404
-        return jsonify({"message": "School updated"}), 200
+            return jsonify({"error": "Department not found"}), 404
+        return jsonify({"message": "Department updated"}), 200
     except mysql.connector.Error as e:
         conn.rollback()
         return jsonify({"error": str(e)}), 400
@@ -420,9 +422,9 @@ def manage_locations():
         try:
             cursor.execute(
                 """
-                SELECT l.*, s.department, s.faculty
+                SELECT l.*, s.dept_name, s.faculty
                 FROM Location l
-                LEFT JOIN School s ON l.school_name = s.school_name
+                LEFT JOIN School s ON l.department = s.department
                 """
             )
             locations = cursor.fetchall()
@@ -445,7 +447,7 @@ def manage_locations():
     cursor = conn.cursor(dictionary=True)
     try:
         sql = (
-            "INSERT INTO Location (room, floor, building, type, campus, school_name) "
+            "INSERT INTO Location (room, floor, building, type, campus, department) "
             "VALUES (%s, %s, %s, %s, %s, %s)"
         )
         val = (
@@ -454,7 +456,7 @@ def manage_locations():
             data.get('building'),
             data.get('type'),
             data.get('campus'),
-            data.get('school_name'),
+            data.get('department'),
         )
         cursor.execute(sql, val)
         conn.commit()
@@ -503,7 +505,7 @@ def manage_location_item(id):
     try:
         fields = []
         values = []
-        for key in ['room', 'floor', 'building', 'type', 'campus', 'school_name']:
+        for key in ['room', 'floor', 'building', 'type', 'campus', 'department']:
             if key in data:
                 fields.append(f"{key} = %s")
                 values.append(data[key])
@@ -807,7 +809,7 @@ def manage_participations():
         conn.close()
 
 
-# Affiliation (Person-School)
+# Affiliation (Person-Department)
 @app.route('/api/affiliations', methods=['GET', 'POST'])
 def manage_affiliations():
     if request.method == 'GET':
@@ -820,10 +822,10 @@ def manage_affiliations():
             cursor.execute(
                 """
                 SELECT a.personal_id, p.name AS person_name,
-                       s.school_name, s.department
+                       a.department, s.dept_name AS school_name
                 FROM Affiliation a
                 JOIN Person p ON a.personal_id = p.personal_id
-                JOIN School s ON a.school_name = s.school_name
+                JOIN School s ON a.department = s.department
                 """
             )
             affiliations = cursor.fetchall()
@@ -836,7 +838,7 @@ def manage_affiliations():
 
     # POST
     data, error_response = parse_json(
-        required_fields=['personal_id', 'school_name'])
+        required_fields=['personal_id', 'department'])
     if error_response:
         return error_response
 
@@ -846,8 +848,8 @@ def manage_affiliations():
 
     cursor = conn.cursor(dictionary=True)
     try:
-        sql = "INSERT INTO Affiliation (personal_id, school_name) VALUES (%s, %s)"
-        val = (data['personal_id'], data['school_name'])
+        sql = "INSERT INTO Affiliation (personal_id, department) VALUES (%s, %s)"
+        val = (data['personal_id'], data['department'])
         cursor.execute(sql, val)
         conn.commit()
         return jsonify({"message": "Affiliation added"}), 201
@@ -944,7 +946,7 @@ def activities_report():
         conn.close()
 
 
-# Report 4: School Department Statistics
+# Report 4: Department Statistics
 @app.route('/api/reports/school-stats', methods=['GET'])
 def school_stats():
     conn, error_response = get_connection_or_response()
@@ -955,13 +957,13 @@ def school_stats():
     try:
         query = (
             """
-            SELECT s.school_name, s.department,
+            SELECT s.department, s.dept_name AS school_name, s.faculty,
                    COUNT(DISTINCT a.personal_id) AS affiliated_people,
                    COUNT(DISTINCT l.location_id) AS locations_count
             FROM School s
-            LEFT JOIN Affiliation a ON s.school_name = a.school_name
-            LEFT JOIN Location l ON s.school_name = l.school_name
-            GROUP BY s.school_name, s.department
+            LEFT JOIN Affiliation a ON s.department = a.department
+            LEFT JOIN Location l ON s.department = l.department
+            GROUP BY s.department, s.dept_name, s.faculty
             """
         )
         cursor.execute(query)
@@ -1064,10 +1066,10 @@ def bulk_import():
                     'gender'), item.get('date_of_birth'), item.get('supervisor_id'))
                 cursor.execute(sql, val)
         elif entity == 'locations':
-            sql = "INSERT INTO Location (room, floor, building, type, campus, school_name) VALUES (%s, %s, %s, %s, %s, %s)"
+            sql = "INSERT INTO Location (room, floor, building, type, campus, department) VALUES (%s, %s, %s, %s, %s, %s)"
             for item in items:
                 val = (item.get('room'), item.get('floor'), item.get('building'), item.get(
-                    'type'), item.get('campus'), item.get('school_name'))
+                    'type'), item.get('campus'), item.get('department'))
                 cursor.execute(sql, val)
         elif entity == 'activities':
             sql = "INSERT INTO Activity (activity_id, type, time, organiser_id) VALUES (%s, %s, %s, %s)"

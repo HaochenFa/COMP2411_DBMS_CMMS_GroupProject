@@ -26,18 +26,19 @@ def seed_data():
             cursor.execute(f"TRUNCATE TABLE {table}")
         cursor.execute("SET FOREIGN_KEY_CHECKS = 1")
 
-        # --- 1. Schools ---
+        # --- 1. Departments ---
+        # Format: (department_abbr, dept_name, faculty, hq_building)
         schools = [
-            ('School of Computing', 'COMP', 'Faculty of Engineering', 'Library'),
-            ('School of Design', 'SD', 'Faculty of Design', 'Z Block'),
-            ('Faculty of Business', 'FB', 'Faculty of Business', 'Li Ka Shing Tower'),
-            ('Department of Engineering', 'ENG',
+            ('COMP', 'School of Computing', 'Faculty of Engineering', 'Library'),
+            ('SD', 'School of Design', 'Faculty of Design', 'Z Block'),
+            ('FB', 'Faculty of Business', 'Faculty of Business', 'Li Ka Shing Tower'),
+            ('ENG', 'Department of Engineering',
              'Faculty of Engineering', 'PQ Wing'),
-            ('School of Hotel & Tourism', 'SHTM', 'Faculty of Business', 'M Block')
+            ('SHTM', 'School of Hotel & Tourism', 'Faculty of Business', 'M Block')
         ]
         cursor.executemany(
-            "INSERT INTO School (school_name, department, faculty, hq_building) VALUES (%s, %s, %s, %s)", schools)
-        print(f"Inserted {cursor.rowcount} schools.")
+            "INSERT INTO School (department, dept_name, faculty, hq_building) VALUES (%s, %s, %s, %s)", schools)
+        print(f"Inserted {cursor.rowcount} departments.")
 
         # --- 2. External Companies ---
         companies = [
@@ -127,17 +128,18 @@ def seed_data():
 
         # --- 6. Affiliations ---
         affiliations_data = []
-        school_names = [s[0] for s in schools]
+        # Now using department abbreviations
+        dept_abbrs = [s[0] for s in schools]
         for p in people_data:
             pid = p[0]
             # Assign 1 or 2 affiliations
             for _ in range(random.randint(1, 2)):
-                school = random.choice(school_names)
-                if (pid, school) not in affiliations_data:
-                    affiliations_data.append((pid, school))
+                dept = random.choice(dept_abbrs)
+                if (pid, dept) not in affiliations_data:
+                    affiliations_data.append((pid, dept))
 
         cursor.executemany(
-            "INSERT INTO Affiliation (personal_id, school_name) VALUES (%s, %s)", affiliations_data)
+            "INSERT INTO Affiliation (personal_id, department) VALUES (%s, %s)", affiliations_data)
         print(f"Inserted {cursor.rowcount} affiliations.")
 
         # --- 7. Locations ---
@@ -154,13 +156,13 @@ def seed_data():
             room_no = f"{random.randint(1, 9)}{random.randint(0, 9):02d}"
             floor = room_no[0]
             l_type = random.choice(loc_types)
-            school = random.choice(school_names)
+            dept = random.choice(dept_abbrs)
 
             locations_data.append(
-                (room_no, floor, b_name, l_type, campus, school))
+                (room_no, floor, b_name, l_type, campus, dept))
 
         cursor.executemany(
-            "INSERT INTO Location (room, floor, building, type, campus, school_name) VALUES (%s, %s, %s, %s, %s, %s)", locations_data)
+            "INSERT INTO Location (room, floor, building, type, campus, department) VALUES (%s, %s, %s, %s, %s, %s)", locations_data)
         print(f"Inserted {cursor.rowcount} locations.")
 
         # Get Location IDs
