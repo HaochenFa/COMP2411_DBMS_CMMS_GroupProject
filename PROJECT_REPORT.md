@@ -4,7 +4,7 @@
 
 **Report Generated**: November 29, 2025
 **Project Repository**: `HaochenFa/COMP2411_DBMS_CMMS_GroupProject`
-**Current Branch**: `haochenfa/tests`
+**Current Branch**: `main`
 
 ---
 
@@ -134,9 +134,10 @@ erDiagram
     School ||--o{ Location : "contains"
     Location ||--o{ Activity : "hosts"
     Location ||--o{ Maintenance : "requires"
-    
+
     ExternalCompany ||--o{ Maintenance : "contracts"
-    
+    Person }o--o{ Building : "supervises (via BuildingSupervision)"
+
     Person {
         varchar personal_id PK
         varchar name
@@ -145,19 +146,26 @@ erDiagram
         date entry_date
         varchar supervisor_id FK
     }
-    
+
     Profile {
         int profile_id PK
         varchar personal_id FK
         varchar job_role
         varchar status
     }
-    
+
     School {
-        varchar school_name PK
-        varchar department
+        varchar department PK
+        varchar dept_name
         varchar faculty
         varchar hq_building
+    }
+
+    BuildingSupervision {
+        int supervision_id PK
+        varchar personal_id FK
+        varchar building
+        date assigned_date
     }
     
     Location {
@@ -185,6 +193,8 @@ erDiagram
         int location_id FK
         boolean active_chemical
         int contracted_company_id FK
+        datetime scheduled_time
+        datetime end_time
     }
     
     ExternalCompany {
@@ -200,7 +210,7 @@ erDiagram
     
     Affiliation {
         varchar personal_id PK
-        varchar school_name PK
+        varchar department PK
     }
 ```
 
@@ -285,9 +295,12 @@ mindmap
       Profile limits enforcement
       Referential integrity
     Testing
-      139 automated tests
+      148 automated tests
       Backend pytest suite
       Frontend Vitest suite
+    Building Supervision
+      Manager-Building assignment
+      Maintenance tracking per building
 ```
 
 | Category | Strength | Details |
@@ -309,8 +322,9 @@ mindmap
 | **Data Persistence** | localStorage for Dev Console | Query history survives browser refresh |
 | **PDF Reports** | ReportLab + Matplotlib | Professional PDF generation with charts |
 | **Report Customization** | Selectable sections | Users choose which data to include |
-| **Testing** | Comprehensive test suites | 139 automated tests across backend, frontend, desktop |
+| **Testing** | Comprehensive test suites | 148 automated tests across backend, frontend, desktop |
 | **Test Coverage** | Multi-layer testing | Unit tests, integration tests, API tests |
+| **Building Supervision** | Manager oversight | Track which managers supervise which buildings |
 
 ### 3.2 Weaknesses ⚠️
 
@@ -525,6 +539,7 @@ flowchart TB
 | `/api/reports/activities-summary` | Activities by type/organizer |
 | `/api/reports/school-stats` | School statistics |
 | `/api/reports/maintenance-frequency` | Frequency analysis |
+| `/api/reports/manager-buildings` | Manager building supervision report |
 
 #### Special Endpoints
 
@@ -568,7 +583,9 @@ flowchart TB
         end
 
         SS["SafetySearch.jsx<br/>Chemical Hazard Search"]
+        BS["BuildingSupervision.jsx<br/>Manager-Building Tracking"]
         DC["DevConsole.jsx<br/>SQL Query Interface"]
+        RG["ReportGenerator.jsx<br/>PDF Report Generation"]
     end
 
     Layout --> Dashboard
@@ -577,7 +594,9 @@ flowchart TB
     Layout --> RM
     RM --> Part & Aff
     Layout --> SS
+    Layout --> BS
     Layout --> DC
+    Layout --> RG
 ```
 
 ### 5.4 Database Schema Highlights
@@ -591,6 +610,8 @@ flowchart TB
 | **Profile Limits** | API-level enforcement | 10 Mid-level Managers, 50 Base-level Workers |
 | **Chemical Tracking** | Boolean `active_chemical` flag | Simple safety search implementation |
 | **Self-referencing FK** | `supervisor_id` → `personal_id` | Hierarchical supervisor relationships |
+| **Building Supervision** | `BuildingSupervision` M:N table | Managers can supervise multiple buildings |
+| **Scheduled Maintenance** | `scheduled_time`, `end_time` in Maintenance | Time-based filtering for safety search |
 
 ---
 
@@ -627,11 +648,13 @@ flowchart LR
         AS[Activity Summary]
         SchS[School Stats]
         PDF[📄 PDF Reports]
+        BSR[🏢 Building Supervision]
     end
 
     RBAC --> D & CRUD & REL & DC
     D --> MS & PS & AS & SchS
     PDF --> MS & PS & AS & SchS
+    BSR --> MS
 ```
 
 ### 6.2 Role-Based Access Control
@@ -780,7 +803,26 @@ flowchart LR
 - Error display with MySQL error messages
 - **Danger Zone Warning**: Alerts users to potential data risks
 
-### 6.9 Business Rule Enforcement
+### 6.9 Building Supervision
+
+**Purpose**: Track which managers supervise which buildings and related maintenance activities
+
+**Features**:
+
+- Assign mid-level managers to supervise one or more buildings
+- Track assignment dates for each supervision relationship
+- View maintenance counts per supervised building
+- Monitor chemical maintenance tasks under each manager's supervision
+- Generate manager-building reports via `/api/reports/manager-buildings`
+
+**Implementation**:
+
+- `BuildingSupervision` table with `personal_id`, `building`, `assigned_date`
+- Unique constraint on (personal_id, building) to prevent duplicate assignments
+- Report aggregates maintenance counts and chemical tasks per building
+- Frontend component `BuildingSupervision.jsx` for managing assignments
+
+### 6.10 Business Rule Enforcement
 
 ```mermaid
 flowchart TD
@@ -799,14 +841,14 @@ flowchart TD
     R5 -->|Blocks| LocationDelete[Location Deletion]
 ```
 
-### 6.10 Automated Testing
+### 6.11 Automated Testing
 
 **Purpose**: Ensure code quality and prevent regressions through comprehensive test suites
 
 ```mermaid
 flowchart TB
     subgraph Backend["Backend Tests (pytest)"]
-        BU[Unit Tests<br/>85 tests]
+        BU[Unit Tests<br/>94 tests]
         BI[Integration Tests<br/>11 tests]
     end
 
@@ -831,10 +873,10 @@ flowchart TB
 
 | Component | Framework | Tests | Coverage |
 |-----------|-----------|-------|----------|
-| Backend | pytest + pytest-cov | 96 | API endpoints, DB utilities |
+| Backend | pytest + pytest-cov | 105 (94 unit + 11 integration) | API endpoints, DB utilities |
 | Frontend | Vitest + React Testing Library | 39 | Components, API integration |
 | Desktop | Vitest | 4 | Electron utilities |
-| **Total** | - | **139** | - |
+| **Total** | - | **148** | - |
 
 **Backend Test Categories**:
 
@@ -872,11 +914,12 @@ The **PolyU CMMS** is a well-structured, functional Campus Maintenance and Manag
 - **User-friendly features** including dashboards, CRUD operations, and safety search
 - **Professional PDF report generation** with PolyU branding and data visualization
 - **Developer productivity tools** like the Dev Console and bulk import
-- **Comprehensive test suites** with 139 automated tests covering all layers:
-  - Backend: 96 pytest tests (unit + integration)
+- **Comprehensive test suites** with 148 automated tests covering all layers:
+  - Backend: 105 pytest tests (94 unit + 11 integration)
   - Frontend: 39 Vitest tests (components + API integration)
   - Desktop: 4 Vitest tests (Electron utilities)
 - **Quality assurance infrastructure** with pytest-cov for coverage and mocked database connections
+- **Building Supervision feature** for tracking manager-building assignments and related maintenance
 
 ### Priority Improvements 🎯
 
@@ -887,13 +930,13 @@ The **PolyU CMMS** is a well-structured, functional Campus Maintenance and Manag
 ### Test Execution Summary
 
 ```bash
-# Backend: 96 tests (85 passed, 11 skipped - integration tests require DB)
+# Backend: 105 tests (94 unit tests + 11 integration tests)
 cd backend && pytest tests/ -v
 
-# Frontend: 39 tests passed
+# Frontend: 39 tests
 cd frontend && npm test -- --run
 
-# Desktop: 4 tests passed
+# Desktop: 4 tests
 cd desktop && npm test -- --run
 ```
 
