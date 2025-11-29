@@ -10,6 +10,7 @@ import {
   School,
   Link as LinkIcon,
   ShieldAlert,
+  MapPin,
 } from "lucide-react";
 import "../App.css";
 
@@ -42,6 +43,9 @@ export default function Layout({ children }) {
         <NavLink to="/schools" icon={School}>
           Schools
         </NavLink>
+        <NavLink to="/locations" icon={MapPin}>
+          Locations
+        </NavLink>
 
         <NavLink to="/activities" icon={Activity}>
           Activities
@@ -56,8 +60,8 @@ export default function Layout({ children }) {
         <NavLink to="/affiliations" icon={LinkIcon}>
           Affiliations
         </NavLink>
-        
-        <div style={{ marginTop: 'auto', borderTop: '1px solid #eee', paddingTop: '10px' }}>
+
+        <div style={{ marginTop: "auto", borderTop: "1px solid #eee", paddingTop: "10px" }}>
           <NavLink to="/dev-console" icon={Database}>
             Dev Console
           </NavLink>

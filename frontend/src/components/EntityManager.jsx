@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
-import { Plus, Trash2, Edit2, Save, X } from "lucide-react";
+import { Plus, Trash2, Edit2, Save, X, Download, Upload } from "lucide-react";
 
 const API_URL = "http://127.0.0.1:5050/api";
 
@@ -157,6 +157,67 @@ export default function EntityManager({ title, endpoint, columns, idField, creat
     reader.readAsText(importFile);
   };
 
+  const handleExport = () => {
+    if (items.length === 0) {
+      setError("No data to export");
+      return;
+    }
+
+    // Get all unique keys from items (in case some items have different fields)
+    const allKeys = [...new Set(items.flatMap((item) => Object.keys(item)))];
+
+    // Use column keys if available, otherwise use all keys from data
+    const exportKeys = columns.map((col) => col.key);
+    const keysToExport = exportKeys.length > 0 ? exportKeys : allKeys;
+
+    // Create CSV header
+    const headerLabels = keysToExport.map((key) => {
+      const col = columns.find((c) => c.key === key);
+      return col ? col.label : key;
+    });
+
+    // Create CSV content
+    const csvRows = [headerLabels.join(",")];
+
+    items.forEach((item) => {
+      const row = keysToExport.map((key) => {
+        let value = item[key];
+
+        // Handle null/undefined
+        if (value === null || value === undefined) {
+          return "";
+        }
+
+        // Convert to string
+        value = String(value);
+
+        // Escape quotes and wrap in quotes if contains comma, quote, or newline
+        if (value.includes(",") || value.includes('"') || value.includes("\n")) {
+          value = `"${value.replace(/"/g, '""')}"`;
+        }
+
+        return value;
+      });
+      csvRows.push(row.join(","));
+    });
+
+    const csvContent = csvRows.join("\n");
+
+    // Create and download the file
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute(
+      "download",
+      `${endpoint}_export_${new Date().toISOString().split("T")[0]}.csv`
+    );
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="page-container">
       <div
@@ -168,8 +229,11 @@ export default function EntityManager({ title, endpoint, columns, idField, creat
           <p className="subtitle">Manage {title.toLowerCase()} records</p>
         </div>
         <div style={{ display: "flex", gap: "10px" }}>
+          <button onClick={handleExport} className="secondary-btn" disabled={items.length === 0}>
+            <Download size={16} /> Export CSV
+          </button>
           <button onClick={() => setIsImporting(!isImporting)} className="secondary-btn">
-            Import CSV
+            <Upload size={16} /> Import CSV
           </button>
           <button onClick={() => setIsCreating(!isCreating)}>
             {isCreating ? (
