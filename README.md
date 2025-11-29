@@ -1,17 +1,30 @@
 # PolyU CMMS - Campus Maintenance and Management System
 
-A comprehensive database-driven application for managing campus maintenance, activities, personnel, and facilities at The Hong Kong Polytechnic University.
+A comprehensive database-driven application for managing campus maintenance, activities, personnel, and facilities at The Hong Kong Polytechnic University. Developed for COMP2411 Database Systems course.
 
 ## Features
 
 ### Core Functionality
 
-- **Executive Dashboard**: Real-time visualization of maintenance tasks, people distribution, activities, and school statistics
-- **Entity Management**: Full CRUD operations for People, Schools, Activities, and Maintenance records
-- **Relationship Management**: Manage Participations (Person-Activity) and Affiliations (Person-School)
+- **Executive Dashboard**: Real-time visualization of maintenance tasks, people distribution, activities, and school statistics with interactive charts
+- **Entity Management**: Full CRUD operations for:
+  - **People** - Personnel records with supervisor hierarchies
+  - **Schools** - Academic departments with faculty affiliations
+  - **Locations** - Campus buildings, floors, and rooms
+  - **Activities** - Events and lectures with organizers
+  - **Maintenance** - Maintenance tasks with chemical tracking
+- **Relationship Management**:
+  - **Participations** - Person-Activity relationships
+  - **Affiliations** - Person-School relationships
 - **Safety Search**: Search for cleaning activities with chemical hazards by building location
-- **Dev Console**: SQL query interface with query history and localStorage persistence
-- **Bulk Import**: CSV import functionality for batch data operations
+- **Dev Console**: Full SQL query interface with:
+  - Support for all SQL operations (SELECT, INSERT, UPDATE, DELETE, etc.)
+  - Warning popup for dangerous operations before execution
+  - Query history with localStorage persistence
+- **Data Import/Export**:
+  - CSV bulk import for batch data operations
+  - CSV bulk export for all entity and relationship tables
+  - Date-stamped export files with proper CSV escaping
 
 ### Technical Features
 
@@ -20,6 +33,7 @@ A comprehensive database-driven application for managing campus maintenance, act
 - **PolyU Themed UI**: Red wine and white color scheme matching PolyU branding
 - **Responsive Design**: Modern, compact layout with glass panel effects
 - **Data Visualization**: Interactive charts using Recharts library
+- **Cascading Selects**: Smart form fields with dependent dropdowns and ability to add new entries
 
 ## Prerequisites
 
@@ -211,39 +225,45 @@ Ensure your MySQL server is running. Create a database (default name `cmms_db`) 
 
 ## Project Structure
 
-```
+```text
 .
-├── backend/              # Flask REST API backend
-│   ├── app.py           # Main Flask application with API endpoints
-│   ├── db.py            # Database connection utilities
-│   ├── db_init.py       # Database initialization script
-│   ├── schema.sql       # Database schema definition
-│   ├── seed_data.py     # Mock data generation script
-│   ├── wait_for_db.py   # Docker database readiness check
-│   ├── Dockerfile       # Backend container configuration
-│   └── requirements.txt # Python dependencies
+├── backend/                 # Flask REST API backend
+│   ├── app.py               # Main Flask application with API endpoints
+│   ├── db.py                # Database connection utilities
+│   ├── db_init.py           # Database initialization script
+│   ├── schema.sql           # Database schema definition
+│   ├── seed_data.py         # Mock data generation script
+│   ├── wait_for_db.py       # Docker database readiness check
+│   ├── Dockerfile           # Backend container configuration
+│   └── requirements.txt     # Python dependencies
 │
-├── frontend/            # React + Vite frontend
+├── frontend/                # React + Vite frontend
 │   ├── src/
-│   │   ├── components/  # React components
+│   │   ├── components/      # React components
 │   │   │   ├── Dashboard.jsx           # Executive dashboard with charts
-│   │   │   ├── EntityManager.jsx       # Generic CRUD component
-│   │   │   ├── RelationshipManager.jsx # Relationship management
+│   │   │   ├── EntityManager.jsx       # Generic CRUD with import/export
+│   │   │   ├── RelationshipManager.jsx # Relationship management with export
 │   │   │   ├── SafetySearch.jsx        # Chemical hazard search
-│   │   │   ├── DevConsole.jsx          # SQL query interface
+│   │   │   ├── DevConsole.jsx          # SQL query interface with warnings
 │   │   │   └── Layout.jsx              # App layout and navigation
-│   │   ├── App.jsx      # Main application component
-│   │   └── App.css      # PolyU-themed styling
-│   ├── Dockerfile       # Frontend container configuration
-│   └── package.json     # Node.js dependencies
+│   │   ├── App.jsx          # Main application with routing
+│   │   └── App.css          # PolyU-themed styling
+│   ├── Dockerfile           # Frontend container configuration
+│   └── package.json         # Node.js dependencies
 │
-├── desktop/             # Electron desktop wrapper
-│   ├── main.js          # Electron main process
-│   └── package.json     # Electron dependencies
+├── desktop/                 # Electron desktop wrapper
+│   ├── main.js              # Electron main process
+│   └── package.json         # Electron dependencies
 │
-├── docker-compose.yml   # Multi-container orchestration
-├── run.sh              # macOS/Linux startup script
-└── run.ps1             # Windows PowerShell startup script
+├── assets/                  # Application icons
+│   ├── icon.png             # PNG icon
+│   └── icon.icns            # macOS icon
+│
+├── docker-compose.yml       # Multi-container orchestration
+├── run.sh                   # macOS/Linux startup script
+├── run.ps1                  # Windows PowerShell startup script
+├── ERD.png                  # Entity-Relationship Diagram
+└── PROJECT_REPORT.md        # Project report documentation
 ```
 
 ## Database Schema
@@ -264,18 +284,30 @@ The system uses a normalized relational database with the following entities:
 
 The backend provides RESTful API endpoints for:
 
-- `/api/persons` - Person CRUD operations
+### Entity CRUD Operations
+
+- `/api/persons` - Person management (GET, POST, PUT, DELETE)
 - `/api/profiles` - Profile management
-- `/api/schools` - School management
-- `/api/locations` - Location management
+- `/api/schools` - School/Department management
+- `/api/locations` - Location management (buildings, floors, rooms)
 - `/api/activities` - Activity management
 - `/api/maintenance` - Maintenance task management
 - `/api/companies` - External company management
-- `/api/participations` - Participation relationship management
-- `/api/affiliations` - Affiliation relationship management
-- `/api/search/safety` - Safety search for chemical hazards
-- `/api/query` - Execute read-only SQL queries (Dev Console)
-- `/api/maintenance-summary` - Dashboard statistics
+
+### Relationship Management
+
+- `/api/participations` - Person-Activity relationships
+- `/api/affiliations` - Person-School relationships
+
+### Special Operations
+
+- `/api/search/safety` - Safety search for chemical hazards by building
+- `/api/query` - Execute SQL queries (Dev Console)
+- `/api/import` - Bulk import from CSV data
+
+### Dashboard Statistics
+
+- `/api/maintenance-summary` - Maintenance tasks by type
 - `/api/people-summary` - People distribution by role
 - `/api/activities-summary` - Activities by type
 - `/api/school-stats` - School statistics
@@ -288,15 +320,16 @@ The backend provides RESTful API endpoints for:
 - Automatic database initialization on first startup
 - Seed data generation available via `backend/seed_data.py`
 - CORS enabled for frontend communication
-- Read-only SQL query validation for security
+- Full SQL query support with dangerous operation warnings on frontend
 
 ### Frontend (React + Vite)
 
 - Runs on port **5173**
 - API URL configured to `http://localhost:5050/api`
 - Uses Recharts for data visualization
-- localStorage persistence for Dev Console
+- localStorage persistence for Dev Console query history
 - Responsive design with PolyU branding
+- CSV import/export functionality for all tables
 
 ### Docker Setup
 
@@ -318,23 +351,23 @@ The backend provides RESTful API endpoints for:
 
 ✅ **Completed Features:**
 
-- Full database schema with normalized relationships
-- Complete REST API with CRUD operations
+- Full database schema with normalized relationships (9 tables)
+- Complete REST API with CRUD operations for all entities
 - Executive dashboard with real-time visualizations
-- Entity and relationship management interfaces
-- Safety search functionality
-- Dev Console with SQL query interface
-- Docker containerization
+- Entity management interfaces (People, Schools, Locations, Activities, Maintenance)
+- Relationship management (Participations, Affiliations)
+- Safety search functionality for chemical hazards
+- Dev Console with full SQL support and safety warnings
+- CSV bulk import and export functionality
+- Docker containerization with MySQL, Flask, React
 - Electron desktop wrapper
-- Automated startup scripts
-- Mock data generation
-- PolyU-themed UI
+- Automated startup scripts (run.sh, run.ps1)
+- Mock data generation with seed_data.py
+- PolyU-themed UI with responsive design
 
 🚧 **Known Limitations:**
 
-- Dev Console allows read-only SELECT queries only
 - No user authentication/authorization system
-- No data export functionality (except via Dev Console)
 - Limited error handling in some edge cases
 
 ## Troubleshooting
