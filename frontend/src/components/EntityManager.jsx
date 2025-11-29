@@ -1,10 +1,17 @@
 import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { Plus, Trash2, Edit2, Save, X, Download, Upload } from "lucide-react";
+import { useRole } from "../context/RoleContext";
 
 const API_URL = "http://127.0.0.1:5050/api";
 
 export default function EntityManager({ title, endpoint, columns, idField, createFields }) {
+  const { hasPermission } = useRole();
+  const canCreate = hasPermission("canCreate");
+  const canUpdate = hasPermission("canUpdate");
+  const canDelete = hasPermission("canDelete");
+  const canModify = canCreate || canUpdate || canDelete;
+
   const [items, setItems] = useState([]);
   const [newItem, setNewItem] = useState({});
   const [isCreating, setIsCreating] = useState(false);
@@ -232,24 +239,28 @@ export default function EntityManager({ title, endpoint, columns, idField, creat
           <button onClick={handleExport} className="secondary-btn" disabled={items.length === 0}>
             <Download size={16} /> Export CSV
           </button>
-          <button onClick={() => setIsImporting(!isImporting)} className="secondary-btn">
-            <Upload size={16} /> Import CSV
-          </button>
-          <button onClick={() => setIsCreating(!isCreating)}>
-            {isCreating ? (
-              <>
-                <X size={16} /> Cancel
-              </>
-            ) : (
-              <>
-                <Plus size={16} /> Add New
-              </>
-            )}
-          </button>
+          {canCreate && (
+            <button onClick={() => setIsImporting(!isImporting)} className="secondary-btn">
+              <Upload size={16} /> Import CSV
+            </button>
+          )}
+          {canCreate && (
+            <button onClick={() => setIsCreating(!isCreating)}>
+              {isCreating ? (
+                <>
+                  <X size={16} /> Cancel
+                </>
+              ) : (
+                <>
+                  <Plus size={16} /> Add New
+                </>
+              )}
+            </button>
+          )}
         </div>
       </div>
 
-      {isImporting && (
+      {isImporting && canCreate && (
         <div
           className="import-section"
           style={{
@@ -285,7 +296,7 @@ export default function EntityManager({ title, endpoint, columns, idField, creat
 
       {error && <div className="error">{error}</div>}
 
-      {isCreating && (
+      {isCreating && canCreate && (
         <form onSubmit={handleCreate} className="data-form">
           {createFields.map((field) => {
             // Handle cascading select (e.g., Building -> Room)
@@ -424,7 +435,7 @@ export default function EntityManager({ title, endpoint, columns, idField, creat
               {columns.map((col) => (
                 <th key={col.key}>{col.label}</th>
               ))}
-              <th>Actions</th>
+              {canModify && <th>Actions</th>}
             </tr>
           </thead>
           <tbody>
@@ -473,33 +484,39 @@ export default function EntityManager({ title, endpoint, columns, idField, creat
                     </td>
                   );
                 })}
-                <td>
-                  {editingId === item[idField] ? (
-                    <>
-                      <button
-                        onClick={() => handleUpdate(item[idField])}
-                        className="icon-btn success"
-                      >
-                        <Save size={16} />
-                      </button>
-                      <button onClick={cancelEdit} className="icon-btn">
-                        <X size={16} />
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <button onClick={() => startEdit(item)} className="icon-btn">
-                        <Edit2 size={16} />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(item[idField])}
-                        className="icon-btn danger"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </>
-                  )}
-                </td>
+                {canModify && (
+                  <td>
+                    {editingId === item[idField] ? (
+                      <>
+                        <button
+                          onClick={() => handleUpdate(item[idField])}
+                          className="icon-btn success"
+                        >
+                          <Save size={16} />
+                        </button>
+                        <button onClick={cancelEdit} className="icon-btn">
+                          <X size={16} />
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        {canUpdate && (
+                          <button onClick={() => startEdit(item)} className="icon-btn">
+                            <Edit2 size={16} />
+                          </button>
+                        )}
+                        {canDelete && (
+                          <button
+                            onClick={() => handleDelete(item[idField])}
+                            className="icon-btn danger"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        )}
+                      </>
+                    )}
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>

@@ -1,10 +1,14 @@
 import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { Plus, Link as LinkIcon, Download } from "lucide-react";
+import { useRole } from "../context/RoleContext";
 
 const API_URL = "http://127.0.0.1:5050/api";
 
 export default function RelationshipManager({ title, endpoint, fields, displayColumns }) {
+  const { hasPermission } = useRole();
+  const canCreate = hasPermission("canCreate");
+
   const [items, setItems] = useState([]);
   const [newItem, setNewItem] = useState({});
   const [error, setError] = useState(null);
@@ -91,20 +95,22 @@ export default function RelationshipManager({ title, endpoint, fields, displayCo
 
       {error && <div className="error">{error}</div>}
 
-      <form onSubmit={handleCreate} className="data-form">
-        {fields.map((field) => (
-          <input
-            key={field.name}
-            placeholder={field.label}
-            value={newItem[field.name] || ""}
-            onChange={(e) => setNewItem({ ...newItem, [field.name]: e.target.value })}
-            required
-          />
-        ))}
-        <button type="submit">
-          <LinkIcon size={16} /> Link
-        </button>
-      </form>
+      {canCreate && (
+        <form onSubmit={handleCreate} className="data-form">
+          {fields.map((field) => (
+            <input
+              key={field.name}
+              placeholder={field.label}
+              value={newItem[field.name] || ""}
+              onChange={(e) => setNewItem({ ...newItem, [field.name]: e.target.value })}
+              required
+            />
+          ))}
+          <button type="submit">
+            <LinkIcon size={16} /> Link
+          </button>
+        </form>
+      )}
 
       <div className="table-wrapper">
         <table>

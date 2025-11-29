@@ -18,7 +18,7 @@ def seed_data():
         # Clear existing data
         cursor.execute("SET FOREIGN_KEY_CHECKS = 0")
         tables = [
-            "Maintenance",
+            "BuildingSupervision", "Maintenance",
             "Participation", "Affiliation", "Activity", "Location",
             "ExternalCompany", "School", "Profile", "Person"
         ]
@@ -206,8 +206,9 @@ def seed_data():
 
         # --- 11. Maintenance ---
         maintenance_data = []
-        m_types = ['Repair', 'Cleaning',
-                   'Security', 'Inspection', 'Renovation']
+        # Updated types to include weather-related maintenance
+        m_types = ['Repair', 'Cleaning', 'Security', 'Inspection', 'Renovation',
+                   'Weather Damage', 'Flood Cleanup', 'Storm Repair', 'Window Repair', 'Aging Repair']
         frequencies = ['Daily', 'Weekly', 'Monthly', 'Yearly', 'One-off']
 
         for i in range(50):  # 50 Tasks
@@ -225,12 +226,56 @@ def seed_data():
             if random.random() > 0.6:  # 40% chance of being contracted
                 company_id = random.choice(company_ids)
 
+            # Generate scheduled_time and end_time for time-based filtering
+            # Schedule maintenance within the next 60 days
+            scheduled_time = datetime.now() + timedelta(
+                days=random.randint(0, 60),
+                hours=random.randint(8, 17)
+            )
+            # End time is 1-4 hours after start
+            end_time = scheduled_time + timedelta(hours=random.randint(1, 4))
+
             maintenance_data.append(
-                (m_type, freq, lid, chemical_used, company_id))
+                (m_type, freq, lid, chemical_used, company_id, scheduled_time, end_time))
 
         cursor.executemany(
-            "INSERT INTO Maintenance (type, frequency, location_id, active_chemical, contracted_company_id) VALUES (%s, %s, %s, %s, %s)", maintenance_data)
+            "INSERT INTO Maintenance (type, frequency, location_id, active_chemical, contracted_company_id, scheduled_time, end_time) VALUES (%s, %s, %s, %s, %s, %s, %s)", maintenance_data)
         print(f"Inserted {cursor.rowcount} maintenance tasks.")
+
+        # --- 12. Building Supervision ---
+        # Assign mid-level managers to supervise buildings
+        building_supervision_data = []
+
+        # Get mid-level managers from profiles
+        cursor.execute("""
+            SELECT p.personal_id FROM Person p
+            JOIN Profile pr ON p.personal_id = pr.personal_id
+            WHERE pr.job_role = 'Mid-level Manager' AND pr.status = 'Current'
+        """)
+        manager_ids = [row[0] for row in cursor.fetchall()]
+
+        # If no mid-level managers found, use first few supervisors
+        if not manager_ids:
+            manager_ids = supervisor_ids[:5]
+
+        # Assign each manager to 1-3 buildings
+        for manager_id in manager_ids:
+            num_buildings = random.randint(1, 3)
+            assigned_buildings = random.sample(
+                building_names, min(num_buildings, len(building_names)))
+            for building in assigned_buildings:
+                assigned_date = (
+                    datetime.now() - timedelta(days=random.randint(30, 365))).strftime('%Y-%m-%d')
+                if (manager_id, building) not in [(b[0], b[1]) for b in building_supervision_data]:
+                    building_supervision_data.append(
+                        (manager_id, building, assigned_date))
+
+        if building_supervision_data:
+            cursor.executemany(
+                "INSERT INTO BuildingSupervision (personal_id, building, assigned_date) VALUES (%s, %s, %s)",
+                building_supervision_data
+            )
+            print(f"Inserted {cursor.rowcount} building supervisions.")
 
         conn.commit()
         print("Data seeding completed successfully!")
