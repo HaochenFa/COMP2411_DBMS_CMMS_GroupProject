@@ -17,9 +17,9 @@ class TestLocationsEndpoint:
              'type': 'Classroom', 'campus': 'Main', 'department': 'COMP',
              'dept_name': 'Computing', 'faculty': 'Engineering'}
         ]
-        
+
         response = client.get('/api/locations')
-        
+
         assert response.status_code == 200
         data = json.loads(response.data)
         assert len(data) == 1
@@ -28,13 +28,13 @@ class TestLocationsEndpoint:
     def test_create_location_success(self, client, mock_get_db_connection, sample_location):
         """Test POST /api/locations creates a new location."""
         mock_conn, mock_cursor = mock_get_db_connection
-        
+
         response = client.post(
             '/api/locations',
             data=json.dumps(sample_location),
             content_type='application/json'
         )
-        
+
         assert response.status_code == 201
         data = json.loads(response.data)
         assert data['message'] == 'Location created'
@@ -42,13 +42,13 @@ class TestLocationsEndpoint:
     def test_create_location_minimal_data(self, client, mock_get_db_connection):
         """Test POST /api/locations works with minimal data."""
         mock_conn, mock_cursor = mock_get_db_connection
-        
+
         response = client.post(
             '/api/locations',
             data=json.dumps({'building': 'Block B'}),
             content_type='application/json'
         )
-        
+
         assert response.status_code == 201
 
 
@@ -59,13 +59,13 @@ class TestLocationItemEndpoint:
         """Test PUT /api/locations/<id> updates a location."""
         mock_conn, mock_cursor = mock_get_db_connection
         mock_cursor.rowcount = 1
-        
+
         response = client.put(
             '/api/locations/1',
             data=json.dumps({'room': '102', 'floor': '2'}),
             content_type='application/json'
         )
-        
+
         assert response.status_code == 200
         data = json.loads(response.data)
         assert data['message'] == 'Location updated'
@@ -74,35 +74,36 @@ class TestLocationItemEndpoint:
         """Test PUT /api/locations/<id> returns 404 when location not found."""
         mock_conn, mock_cursor = mock_get_db_connection
         mock_cursor.rowcount = 0
-        
+
         response = client.put(
             '/api/locations/999',
             data=json.dumps({'room': '102'}),
             content_type='application/json'
         )
-        
+
         assert response.status_code == 404
 
     def test_update_location_no_fields(self, client, mock_get_db_connection):
         """Test PUT /api/locations/<id> fails when no fields provided."""
         mock_conn, mock_cursor = mock_get_db_connection
-        
+
         response = client.put(
             '/api/locations/1',
             data=json.dumps({}),
             content_type='application/json'
         )
-        
+
         assert response.status_code == 400
 
     def test_delete_location_success(self, client, mock_get_db_connection):
         """Test DELETE /api/locations/<id> deletes a location."""
         mock_conn, mock_cursor = mock_get_db_connection
-        mock_cursor.fetchone.return_value = {'count': 0}  # No maintenance tasks
+        mock_cursor.fetchone.return_value = {
+            'count': 0}  # No maintenance tasks
         mock_cursor.rowcount = 1
-        
+
         response = client.delete('/api/locations/1')
-        
+
         assert response.status_code == 200
         data = json.loads(response.data)
         assert data['message'] == 'Location deleted'
@@ -110,10 +111,11 @@ class TestLocationItemEndpoint:
     def test_delete_location_with_maintenance(self, client, mock_get_db_connection):
         """Test DELETE /api/locations/<id> fails when location has maintenance."""
         mock_conn, mock_cursor = mock_get_db_connection
-        mock_cursor.fetchone.return_value = {'count': 5}  # Has maintenance tasks
-        
+        mock_cursor.fetchone.return_value = {
+            'count': 5}  # Has maintenance tasks
+
         response = client.delete('/api/locations/1')
-        
+
         assert response.status_code == 400
         data = json.loads(response.data)
         assert 'Cannot delete' in data['error']
@@ -123,8 +125,7 @@ class TestLocationItemEndpoint:
         mock_conn, mock_cursor = mock_get_db_connection
         mock_cursor.fetchone.return_value = {'count': 0}
         mock_cursor.rowcount = 0
-        
-        response = client.delete('/api/locations/999')
-        
-        assert response.status_code == 404
 
+        response = client.delete('/api/locations/999')
+
+        assert response.status_code == 404

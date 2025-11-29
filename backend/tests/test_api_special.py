@@ -17,9 +17,9 @@ class TestSafetySearchEndpoint:
              'location_id': 1, 'active_chemical': False, 'building': 'Block A',
              'room': '101', 'floor': '1'}
         ]
-        
+
         response = client.get('/api/search/safety?building=Block A')
-        
+
         assert response.status_code == 200
         data = json.loads(response.data)
         assert len(data) == 1
@@ -33,9 +33,9 @@ class TestSafetySearchEndpoint:
              'location_id': 1, 'active_chemical': True, 'building': 'Block A',
              'room': '101', 'floor': '1'}
         ]
-        
+
         response = client.get('/api/search/safety?building=Block A')
-        
+
         assert response.status_code == 200
         data = json.loads(response.data)
         assert len(data) == 1
@@ -46,9 +46,9 @@ class TestSafetySearchEndpoint:
         """Test GET /api/search/safety works without building filter."""
         mock_conn, mock_cursor = mock_get_db_connection
         mock_cursor.fetchall.return_value = []
-        
+
         response = client.get('/api/search/safety')
-        
+
         assert response.status_code == 200
 
 
@@ -58,7 +58,7 @@ class TestBulkImportEndpoint:
     def test_bulk_import_persons_success(self, client, mock_get_db_connection):
         """Test POST /api/import imports persons successfully."""
         mock_conn, mock_cursor = mock_get_db_connection
-        
+
         response = client.post(
             '/api/import',
             data=json.dumps({
@@ -70,7 +70,7 @@ class TestBulkImportEndpoint:
             }),
             content_type='application/json'
         )
-        
+
         assert response.status_code == 201
         data = json.loads(response.data)
         assert '2 items' in data['message']
@@ -78,7 +78,7 @@ class TestBulkImportEndpoint:
     def test_bulk_import_locations_success(self, client, mock_get_db_connection):
         """Test POST /api/import imports locations successfully."""
         mock_conn, mock_cursor = mock_get_db_connection
-        
+
         response = client.post(
             '/api/import',
             data=json.dumps({
@@ -89,13 +89,13 @@ class TestBulkImportEndpoint:
             }),
             content_type='application/json'
         )
-        
+
         assert response.status_code == 201
 
     def test_bulk_import_activities_success(self, client, mock_get_db_connection):
         """Test POST /api/import imports activities successfully."""
         mock_conn, mock_cursor = mock_get_db_connection
-        
+
         response = client.post(
             '/api/import',
             data=json.dumps({
@@ -106,13 +106,13 @@ class TestBulkImportEndpoint:
             }),
             content_type='application/json'
         )
-        
+
         assert response.status_code == 201
 
     def test_bulk_import_unsupported_entity(self, client, mock_get_db_connection):
         """Test POST /api/import fails for unsupported entity."""
         mock_conn, mock_cursor = mock_get_db_connection
-        
+
         response = client.post(
             '/api/import',
             data=json.dumps({
@@ -121,7 +121,7 @@ class TestBulkImportEndpoint:
             }),
             content_type='application/json'
         )
-        
+
         assert response.status_code == 400
         data = json.loads(response.data)
         assert 'Unsupported entity' in data['error']
@@ -129,7 +129,7 @@ class TestBulkImportEndpoint:
     def test_bulk_import_invalid_items_type(self, client, mock_get_db_connection):
         """Test POST /api/import fails when items is not a list."""
         mock_conn, mock_cursor = mock_get_db_connection
-        
+
         response = client.post(
             '/api/import',
             data=json.dumps({
@@ -138,7 +138,7 @@ class TestBulkImportEndpoint:
             }),
             content_type='application/json'
         )
-        
+
         assert response.status_code == 400
         data = json.loads(response.data)
         assert 'must be a list' in data['error']
@@ -150,6 +150,5 @@ class TestBulkImportEndpoint:
             data=json.dumps({'entity': 'persons'}),  # Missing items
             content_type='application/json'
         )
-        
-        assert response.status_code == 400
 
+        assert response.status_code == 400

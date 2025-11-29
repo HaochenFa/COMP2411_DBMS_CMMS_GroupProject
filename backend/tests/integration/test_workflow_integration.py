@@ -35,7 +35,8 @@ class TestPersonProfileWorkflow:
         response = integration_client.get('/api/profiles')
         assert response.status_code == 200
         data = json.loads(response.data)
-        assert any(p['personal_id'] == sample_person_data['personal_id'] for p in data)
+        assert any(p['personal_id'] == sample_person_data['personal_id']
+                   for p in data)
 
 
 class TestSchoolAffiliationWorkflow:
@@ -138,14 +139,14 @@ class TestBulkImportWorkflow:
                 {'personal_id': 'BULK003', 'name': 'Bulk Person 3'},
             ]
         }
-        
+
         response = integration_client.post(
             '/api/import',
             data=json.dumps(import_data),
             content_type='application/json'
         )
         assert response.status_code == 201
-        
+
         # Verify all persons were created
         response = integration_client.get('/api/persons')
         data = json.loads(response.data)
@@ -193,12 +194,11 @@ class TestSafetySearchWorkflow:
         )
         assert response.status_code == 200
         data = json.loads(response.data)
-        
+
         # Verify warning is present for chemical maintenance
         assert any(
-            m.get('active_chemical') == True or 
+            m.get('active_chemical') == True or
             m.get('active_chemical') == 1 or
             'warning' in m
             for m in data
         )
-

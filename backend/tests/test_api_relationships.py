@@ -18,9 +18,9 @@ class TestParticipationsEndpoint:
              'activity_time': '2024-03-15 14:00:00',
              'building': 'Block A', 'room': '101'}
         ]
-        
+
         response = client.get('/api/participations')
-        
+
         assert response.status_code == 200
         data = json.loads(response.data)
         assert len(data) == 1
@@ -29,13 +29,13 @@ class TestParticipationsEndpoint:
     def test_create_participation_success(self, client, mock_get_db_connection, sample_participation):
         """Test POST /api/participations creates a new participation."""
         mock_conn, mock_cursor = mock_get_db_connection
-        
+
         response = client.post(
             '/api/participations',
             data=json.dumps(sample_participation),
             content_type='application/json'
         )
-        
+
         assert response.status_code == 201
         data = json.loads(response.data)
         assert data['message'] == 'Participation added'
@@ -43,13 +43,13 @@ class TestParticipationsEndpoint:
     def test_create_participation_missing_fields(self, client, mock_get_db_connection):
         """Test POST /api/participations fails when required fields are missing."""
         mock_conn, mock_cursor = mock_get_db_connection
-        
+
         response = client.post(
             '/api/participations',
             data=json.dumps({'personal_id': 'P001'}),  # Missing activity_id
             content_type='application/json'
         )
-        
+
         assert response.status_code == 400
 
 
@@ -63,9 +63,9 @@ class TestAffiliationsEndpoint:
             {'personal_id': 'P001', 'person_name': 'John Doe',
              'department': 'COMP', 'school_name': 'Computing'}
         ]
-        
+
         response = client.get('/api/affiliations')
-        
+
         assert response.status_code == 200
         data = json.loads(response.data)
         assert len(data) == 1
@@ -74,13 +74,13 @@ class TestAffiliationsEndpoint:
     def test_create_affiliation_success(self, client, mock_get_db_connection, sample_affiliation):
         """Test POST /api/affiliations creates a new affiliation."""
         mock_conn, mock_cursor = mock_get_db_connection
-        
+
         response = client.post(
             '/api/affiliations',
             data=json.dumps(sample_affiliation),
             content_type='application/json'
         )
-        
+
         assert response.status_code == 201
         data = json.loads(response.data)
         assert data['message'] == 'Affiliation added'
@@ -88,13 +88,13 @@ class TestAffiliationsEndpoint:
     def test_create_affiliation_missing_fields(self, client, mock_get_db_connection):
         """Test POST /api/affiliations fails when required fields are missing."""
         mock_conn, mock_cursor = mock_get_db_connection
-        
+
         response = client.post(
             '/api/affiliations',
             data=json.dumps({'personal_id': 'P001'}),  # Missing department
             content_type='application/json'
         )
-        
+
         assert response.status_code == 400
 
 
@@ -105,11 +105,12 @@ class TestExternalCompaniesEndpoint:
         """Test GET /api/external-companies returns list of companies."""
         mock_conn, mock_cursor = mock_get_db_connection
         mock_cursor.fetchall.return_value = [
-            {'company_id': 1, 'name': 'CleanCo', 'contact_info': 'info@cleanco.com'}
+            {'company_id': 1, 'name': 'CleanCo',
+                'contact_info': 'info@cleanco.com'}
         ]
-        
+
         response = client.get('/api/external-companies')
-        
+
         assert response.status_code == 200
         data = json.loads(response.data)
         assert len(data) == 1
@@ -117,13 +118,13 @@ class TestExternalCompaniesEndpoint:
     def test_create_company_success(self, client, mock_get_db_connection, sample_external_company):
         """Test POST /api/external-companies creates a new company."""
         mock_conn, mock_cursor = mock_get_db_connection
-        
+
         response = client.post(
             '/api/external-companies',
             data=json.dumps(sample_external_company),
             content_type='application/json'
         )
-        
+
         assert response.status_code == 201
         data = json.loads(response.data)
         assert data['message'] == 'External Company created'
@@ -131,12 +132,11 @@ class TestExternalCompaniesEndpoint:
     def test_create_company_missing_name(self, client, mock_get_db_connection):
         """Test POST /api/external-companies fails when name is missing."""
         mock_conn, mock_cursor = mock_get_db_connection
-        
+
         response = client.post(
             '/api/external-companies',
             data=json.dumps({'contact_info': 'info@test.com'}),
             content_type='application/json'
         )
-        
-        assert response.status_code == 400
 
+        assert response.status_code == 400

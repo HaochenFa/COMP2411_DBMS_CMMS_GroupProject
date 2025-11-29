@@ -2,6 +2,7 @@
 Pytest fixtures for backend testing.
 Provides mock database connections and Flask test client.
 """
+from app import app
 import pytest
 import sys
 from pathlib import Path
@@ -9,8 +10,6 @@ from unittest.mock import MagicMock, patch
 
 # Add backend directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
-
-from app import app
 
 
 @pytest.fixture
@@ -133,4 +132,3 @@ def sample_external_company():
         'name': 'CleanCo Ltd',
         'contact_info': 'contact@cleanco.com'
     }
-

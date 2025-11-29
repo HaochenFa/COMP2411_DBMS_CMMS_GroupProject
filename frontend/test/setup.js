@@ -1,10 +1,10 @@
 /**
  * Vitest setup file for React Testing Library
  */
-import '@testing-library/jest-dom';
+import "@testing-library/jest-dom";
 
 // Mock window.matchMedia
-Object.defineProperty(window, 'matchMedia', {
+Object.defineProperty(window, "matchMedia", {
   writable: true,
   value: (query) => ({
     matches: false,
@@ -19,7 +19,7 @@ Object.defineProperty(window, 'matchMedia', {
 });
 
 // Mock URL.createObjectURL
-global.URL.createObjectURL = () => 'mock-url';
+global.URL.createObjectURL = () => "mock-url";
 global.URL.revokeObjectURL = () => {};
 
 // Mock localStorage
@@ -38,4 +38,3 @@ class ResizeObserverMock {
   disconnect() {}
 }
 global.ResizeObserver = ResizeObserverMock;
-
