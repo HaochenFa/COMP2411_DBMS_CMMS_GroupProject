@@ -2,9 +2,9 @@
 
 ## Campus Maintenance and Management System
 
-**Report Generated**: November 28, 2025  
-**Project Repository**: `HaochenFa/COMP2411_Database-System_Group-Project`  
-**Current Branch**: `haochenfa/backend`
+**Report Generated**: November 29, 2025
+**Project Repository**: `HaochenFa/COMP2411_DBMS_CMMS_GroupProject`
+**Current Branch**: `haochenfa/tests`
 
 ---
 
@@ -59,6 +59,8 @@ gantt
     section Phase 4
     Feature Addition           :done, features, 2025-11-28, 1d
     Documentation              :done, docs, 2025-11-28, 1d
+    section Phase 5
+    Test Suite Implementation  :done, testing, 2025-11-29, 1d
 ```
 
 | Phase | Date | Milestone |
@@ -71,6 +73,7 @@ gantt
 | UI Refinement | Nov 27 | PolyU branding, red wine theme |
 | Feature Addition | Nov 28 | Safety Search, Dev Console, cascading dropdowns |
 | Documentation | Nov 28 | Comprehensive README update |
+| Testing | Nov 29 | Comprehensive test suites (pytest, Vitest) |
 
 ---
 
@@ -272,6 +275,10 @@ mindmap
     Business Rules
       Profile limits enforcement
       Referential integrity
+    Testing
+      139 automated tests
+      Backend pytest suite
+      Frontend Vitest suite
 ```
 
 | Category | Strength | Details |
@@ -290,6 +297,8 @@ mindmap
 | **API Design** | RESTful endpoints | Consistent CRUD patterns across all entities |
 | **Error Handling** | Comprehensive error responses | JSON error messages with MySQL error codes |
 | **Data Persistence** | localStorage for Dev Console | Query history survives browser refresh |
+| **Testing** | Comprehensive test suites | 139 automated tests across backend, frontend, desktop |
+| **Test Coverage** | Multi-layer testing | Unit tests, integration tests, API tests |
 
 ### 3.2 Weaknesses ⚠️
 
@@ -303,9 +312,6 @@ mindmap
     Validation
       Limited server-side
       SQL injection risk
-    Testing
-      No automated tests
-      Removed verification scripts
     Performance
       No pagination
       No caching
@@ -321,7 +327,6 @@ mindmap
 | **API Security** | Dev Console allows all SQL queries | Vulnerable to data manipulation/deletion |
 | **Database Security** | Hardcoded credentials in docker-compose | Security risk in production |
 | **Input Validation** | Limited server-side validation | Potential for invalid data entry |
-| **Testing** | No automated test suite | Removed verification scripts, no unit tests |
 | **Pagination** | No pagination for large datasets | Performance degradation with data growth |
 | **Caching** | No caching mechanism | Repeated database queries for same data |
 | **Transactions** | Limited transaction management | Partial failures possible in bulk operations |
@@ -348,12 +353,12 @@ quadrantChart
 
     Authentication: [0.7, 0.95]
     Input Validation: [0.4, 0.8]
-    Automated Testing: [0.8, 0.85]
     Pagination: [0.3, 0.6]
     Audit Logging: [0.5, 0.7]
     Caching: [0.6, 0.5]
     Mobile UI: [0.7, 0.4]
     PDF Export: [0.5, 0.3]
+    E2E Testing: [0.6, 0.6]
 ```
 
 ### 4.2 High Priority 🔴
@@ -368,14 +373,13 @@ quadrantChart
    - Add query whitelist/blacklist
    - Implement query auditing
 
-3. **Add Comprehensive Testing**
-   - Unit tests for API endpoints (pytest)
-   - Integration tests for database operations
-   - End-to-end tests for critical workflows (Playwright/Cypress)
-
-4. **Environment Configuration**
+3. **Environment Configuration**
    - Use environment variables for all secrets
    - Separate configs for dev/staging/production
+
+4. **Add End-to-End Testing**
+   - E2E tests for critical workflows (Playwright/Cypress)
+   - Automated browser testing for UI flows
 
 ### 4.3 Medium Priority 🟡
 
@@ -689,11 +693,71 @@ flowchart TD
     R5 -->|Blocks| LocationDelete[Location Deletion]
 ```
 
+### 6.8 Automated Testing
+
+**Purpose**: Ensure code quality and prevent regressions through comprehensive test suites
+
+```mermaid
+flowchart TB
+    subgraph Backend["Backend Tests (pytest)"]
+        BU[Unit Tests<br/>85 tests]
+        BI[Integration Tests<br/>11 tests]
+    end
+
+    subgraph Frontend["Frontend Tests (Vitest)"]
+        FC[Component Tests<br/>34 tests]
+        FI[API Integration<br/>5 tests]
+    end
+
+    subgraph Desktop["Desktop Tests (Vitest)"]
+        DU[Utility Tests<br/>4 tests]
+    end
+
+    BU --> API[API Endpoints]
+    BU --> DB[Database Utils]
+    BI --> MySQL[(MySQL)]
+    FC --> Components[React Components]
+    FI --> MockAPI[Mocked API]
+    DU --> Electron[Electron Utils]
+```
+
+**Test Coverage**:
+
+| Component | Framework | Tests | Coverage |
+|-----------|-----------|-------|----------|
+| Backend | pytest + pytest-cov | 96 | API endpoints, DB utilities |
+| Frontend | Vitest + React Testing Library | 39 | Components, API integration |
+| Desktop | Vitest | 4 | Electron utilities |
+| **Total** | - | **139** | - |
+
+**Backend Test Categories**:
+
+- `test_api_persons.py` - Person CRUD operations
+- `test_api_schools.py` - School CRUD operations
+- `test_api_locations.py` - Location CRUD operations
+- `test_api_activities.py` - Activity CRUD operations
+- `test_api_maintenance.py` - Maintenance CRUD operations
+- `test_api_profiles.py` - Profile CRUD with business rule validation
+- `test_api_relationships.py` - Participation/Affiliation operations
+- `test_api_reports.py` - Dashboard report endpoints
+- `test_api_special.py` - Safety search and raw query endpoints
+- `test_db.py` - Database connection utilities
+- `integration/` - Full database integration tests
+
+**Frontend Test Categories**:
+
+- `Dashboard.test.jsx` - Dashboard rendering and chart display
+- `DevConsole.test.jsx` - SQL console functionality
+- `EntityManager.test.jsx` - Generic CRUD component
+- `RelationshipManager.test.jsx` - Relationship management
+- `SafetySearch.test.jsx` - Chemical hazard search
+- `api.test.jsx` - Frontend-backend API integration
+
 ---
 
 ## 7. Conclusion
 
-The **PolyU CMMS** is a well-structured, functional Campus Maintenance and Management System that successfully demonstrates a modern full-stack architecture.
+The **PolyU CMMS** is a well-structured, functional Campus Maintenance and Management System that successfully demonstrates a modern full-stack architecture with comprehensive testing.
 
 ### Key Achievements ✅
 
@@ -701,12 +765,30 @@ The **PolyU CMMS** is a well-structured, functional Campus Maintenance and Manag
 - **Clean separation of concerns** across frontend, backend, and database layers
 - **User-friendly features** including dashboards, CRUD operations, and safety search
 - **Developer productivity tools** like the Dev Console and bulk import
+- **Comprehensive test suites** with 139 automated tests covering all layers:
+  - Backend: 96 pytest tests (unit + integration)
+  - Frontend: 39 Vitest tests (components + API integration)
+  - Desktop: 4 Vitest tests (Electron utilities)
+- **Quality assurance infrastructure** with pytest-cov for coverage and mocked database connections
 
 ### Priority Improvements 🎯
 
 1. **Security**: Authentication, input validation, secure Dev Console
-2. **Testing**: Automated test suite for API and UI
+2. **End-to-End Testing**: Browser automation with Playwright/Cypress
 3. **Performance**: Pagination, caching, query optimization
+
+### Test Execution Summary
+
+```bash
+# Backend: 96 tests (85 passed, 11 skipped - integration tests require DB)
+cd backend && pytest tests/ -v
+
+# Frontend: 39 tests passed
+cd frontend && npm test -- --run
+
+# Desktop: 4 tests passed
+cd desktop && npm test -- --run
+```
 
 ---
 
