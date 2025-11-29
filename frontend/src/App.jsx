@@ -100,6 +100,87 @@ function App() {
           />
 
           <Route
+            path="/locations"
+            element={
+              <EntityManager
+                title="Location Management"
+                endpoint="locations"
+                idField="location_id"
+                columns={[
+                  { key: "location_id", label: "ID" },
+                  { key: "building", label: "Building" },
+                  { key: "floor", label: "Floor" },
+                  { key: "room", label: "Room" },
+                  { key: "type", label: "Type" },
+                  { key: "campus", label: "Campus" },
+                  { key: "dept_name", label: "Department" },
+                ]}
+                createFields={[
+                  {
+                    name: "building",
+                    label: "Building",
+                    required: true,
+                    type: "cascading-select",
+                    optionsEndpoint: "locations",
+                    optionValue: "building",
+                    optionLabel: (loc) => loc.building,
+                    unique: true,
+                    allowNew: true,
+                  },
+                  {
+                    name: "floor",
+                    label: "Floor",
+                    type: "cascading-select",
+                    optionsEndpoint: "locations",
+                    dependsOn: "building",
+                    filterBy: "building",
+                    optionValue: "floor",
+                    optionLabel: (loc) => `Floor ${loc.floor}`,
+                    unique: true,
+                    allowNew: true,
+                  },
+                  {
+                    name: "room",
+                    label: "Room",
+                    type: "cascading-select",
+                    optionsEndpoint: "locations",
+                    dependsOn: "floor",
+                    filterBy: "floor",
+                    optionValue: "room",
+                    optionLabel: (loc) => `Room ${loc.room}`,
+                    unique: true,
+                    allowNew: true,
+                  },
+                  {
+                    name: "type",
+                    label: "Type",
+                    type: "select",
+                    options: ["Room", "Square", "Gate", "Level", "Hall", "Lab", "Office"],
+                  },
+                  {
+                    name: "campus",
+                    label: "Campus",
+                    type: "cascading-select",
+                    optionsEndpoint: "locations",
+                    optionValue: "campus",
+                    optionLabel: (loc) => loc.campus,
+                    unique: true,
+                    allowNew: true,
+                  },
+                  {
+                    name: "department",
+                    label: "Department",
+                    type: "cascading-select",
+                    optionsEndpoint: "schools",
+                    optionValue: "department",
+                    optionLabel: (s) => `${s.department} - ${s.dept_name || s.school_name}`,
+                  },
+                ]}
+              />
+            }
+          />
+
+          <Route
             path="/activities"
             element={
               <EntityManager
