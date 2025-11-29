@@ -235,7 +235,13 @@ Ensure your MySQL server is running. Create a database (default name `cmms_db`) 
 │   ├── seed_data.py         # Mock data generation script
 │   ├── wait_for_db.py       # Docker database readiness check
 │   ├── Dockerfile           # Backend container configuration
-│   └── requirements.txt     # Python dependencies
+│   ├── requirements.txt     # Python dependencies
+│   ├── pytest.ini           # Pytest configuration
+│   └── tests/               # Backend test suite
+│       ├── conftest.py      # Test fixtures and mocks
+│       ├── test_api_*.py    # API endpoint tests
+│       ├── test_db.py       # Database utility tests
+│       └── integration/     # Integration tests (requires DB)
 │
 ├── frontend/                # React + Vite frontend
 │   ├── src/
@@ -248,11 +254,20 @@ Ensure your MySQL server is running. Create a database (default name `cmms_db`) 
 │   │   │   └── Layout.jsx              # App layout and navigation
 │   │   ├── App.jsx          # Main application with routing
 │   │   └── App.css          # PolyU-themed styling
+│   ├── test/                # Frontend test suite
+│   │   ├── setup.js         # Test setup and configuration
+│   │   ├── mocks.js         # Mock data for tests
+│   │   ├── components/      # Component unit tests
+│   │   └── integration/     # Frontend-backend integration tests
+│   ├── vitest.config.js     # Vitest configuration
 │   ├── Dockerfile           # Frontend container configuration
 │   └── package.json         # Node.js dependencies
 │
 ├── desktop/                 # Electron desktop wrapper
 │   ├── main.js              # Electron main process
+│   ├── test/                # Desktop test suite
+│   │   └── main.test.js     # Electron utility tests
+│   ├── vitest.config.js     # Vitest configuration
 │   └── package.json         # Electron dependencies
 │
 ├── assets/                  # Application icons
@@ -347,6 +362,186 @@ The backend provides RESTful API endpoints for:
 - Waits for frontend readiness before loading
 - Provides native desktop experience
 
+## Testing
+
+The project includes comprehensive test suites for all components using industry-standard testing frameworks.
+
+### Test Overview
+
+| Component | Framework | Tests | Description |
+|-----------|-----------|-------|-------------|
+| Backend | pytest | 96 | API endpoints, database utilities, integration tests |
+| Frontend | Vitest + React Testing Library | 39 | Component tests, API integration tests |
+| Desktop | Vitest | 4 | Electron utility function tests |
+
+### Running Backend Tests (pytest)
+
+The backend uses pytest for unit and integration testing with mocked database connections.
+
+```bash
+# Navigate to backend directory
+cd backend
+
+# Install test dependencies (if not already installed)
+pip install -r requirements.txt
+
+# Run all unit tests (excludes integration tests that require a real database)
+pytest tests/ --ignore=tests/integration -v
+
+# Run all tests including integration tests (requires MySQL connection)
+pytest tests/ -v
+
+# Run tests with coverage report
+pytest tests/ --cov=. --cov-report=html
+
+# Run specific test file
+pytest tests/test_api_persons.py -v
+
+# Run specific test
+pytest tests/test_api_persons.py::TestPersonsEndpoint::test_get_all_persons -v
+```
+
+**Backend Test Structure:**
+
+- `tests/conftest.py` - Shared fixtures and mock database setup
+- `tests/test_api_persons.py` - Person CRUD endpoint tests
+- `tests/test_api_schools.py` - School CRUD endpoint tests
+- `tests/test_api_locations.py` - Location CRUD endpoint tests
+- `tests/test_api_activities.py` - Activity CRUD endpoint tests
+- `tests/test_api_maintenance.py` - Maintenance CRUD endpoint tests
+- `tests/test_api_profiles.py` - Profile CRUD endpoint tests
+- `tests/test_api_relationships.py` - Participation/Affiliation tests
+- `tests/test_api_reports.py` - Dashboard report endpoint tests
+- `tests/test_api_special.py` - Safety search and raw query tests
+- `tests/test_db.py` - Database utility function tests
+- `tests/integration/` - Integration tests requiring real MySQL database
+
+**Running Integration Tests:**
+
+Integration tests require a MySQL database connection and will skip automatically if unavailable.
+
+```bash
+# Set environment variables for test database
+export TEST_DB_HOST=localhost
+export TEST_DB_PORT=3306
+export TEST_DB_USER=root
+export TEST_DB_PASSWORD=your_password
+export TEST_DB_NAME=cmms_test
+
+# Run integration tests
+pytest tests/integration/ -v
+```
+
+### Running Frontend Tests (Vitest)
+
+The frontend uses Vitest with React Testing Library for component testing.
+
+```bash
+# Navigate to frontend directory
+cd frontend
+
+# Install dependencies (if not already installed)
+npm install
+
+# Run all tests once
+npm test -- --run
+
+# Run tests in watch mode (re-runs on file changes)
+npm test
+
+# Run tests with coverage
+npm run test:coverage
+
+# Run specific test file
+npx vitest run test/components/Dashboard.test.jsx
+```
+
+**Frontend Test Structure:**
+
+- `test/setup.js` - Test environment setup with jsdom and mocks
+- `test/mocks.js` - Mock data for API responses
+- `test/components/Dashboard.test.jsx` - Dashboard component tests
+- `test/components/DevConsole.test.jsx` - SQL console component tests
+- `test/components/EntityManager.test.jsx` - Entity CRUD component tests
+- `test/components/RelationshipManager.test.jsx` - Relationship management tests
+- `test/components/SafetySearch.test.jsx` - Safety search component tests
+- `test/integration/api.test.jsx` - Frontend-backend API integration tests
+
+### Running Desktop Tests (Vitest)
+
+The desktop app uses Vitest for testing Electron utility functions.
+
+```bash
+# Navigate to desktop directory
+cd desktop
+
+# Install dependencies (if not already installed)
+npm install
+
+# Run all tests once
+npm test -- --run
+
+# Run tests in watch mode
+npm test
+
+# Run tests with coverage
+npm run test:coverage
+```
+
+**Desktop Test Structure:**
+
+- `test/main.test.js` - Tests for `waitForFrontendReady` and `runCommand` utilities
+
+### Running All Tests
+
+To run all tests across the entire project:
+
+```bash
+# From project root
+
+# Backend tests
+cd backend && pytest tests/ --ignore=tests/integration -v && cd ..
+
+# Frontend tests
+cd frontend && npm test -- --run && cd ..
+
+# Desktop tests
+cd desktop && npm test -- --run && cd ..
+```
+
+### Writing New Tests
+
+**Backend (pytest):**
+
+```python
+# tests/test_example.py
+import pytest
+from app import app
+
+class TestExample:
+    def test_endpoint(self, client, mock_db):
+        """Test description"""
+        mock_db.return_value.fetchall.return_value = [{"id": 1}]
+        response = client.get('/api/example')
+        assert response.status_code == 200
+```
+
+**Frontend (Vitest + React Testing Library):**
+
+```jsx
+// test/components/Example.test.jsx
+import { describe, it, expect, vi } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import Example from '../../src/components/Example';
+
+describe('Example Component', () => {
+  it('should render correctly', () => {
+    render(<Example />);
+    expect(screen.getByText('Expected Text')).toBeInTheDocument();
+  });
+});
+```
+
 ## Current Status
 
 ✅ **Completed Features:**
@@ -364,6 +559,10 @@ The backend provides RESTful API endpoints for:
 - Automated startup scripts (run.sh, run.ps1)
 - Mock data generation with seed_data.py
 - PolyU-themed UI with responsive design
+- **Comprehensive test suites** (139 tests total):
+  - Backend: 96 pytest tests (unit + integration)
+  - Frontend: 39 Vitest tests (components + API integration)
+  - Desktop: 4 Vitest tests (Electron utilities)
 
 🚧 **Known Limitations:**
 
