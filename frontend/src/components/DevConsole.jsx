@@ -32,6 +32,9 @@ class ErrorBoundary extends React.Component {
   }
 }
 
+// Dangerous SQL keywords that require confirmation
+const DANGEROUS_KEYWORDS = ["DELETE", "DROP", "TRUNCATE", "UPDATE", "ALTER", "INSERT", "CREATE"];
+
 function DevConsoleContent() {
   // Initialize state from localStorage
   const [query, setQuery] = useState(() => {
@@ -49,6 +52,8 @@ function DevConsoleContent() {
     const saved = localStorage.getItem("devConsole_history");
     return saved ? JSON.parse(saved) : [];
   });
+  const [showWarning, setShowWarning] = useState(false);
+  const [warningMessage, setWarningMessage] = useState("");
 
   // Persist query to localStorage
   useEffect(() => {
@@ -78,9 +83,18 @@ function DevConsoleContent() {
     localStorage.setItem("devConsole_history", JSON.stringify(history));
   }, [history]);
 
-  const executeQuery = async () => {
-    if (!query.trim()) return;
+  // Check if query contains dangerous operations
+  const getDangerousOperation = (sql) => {
+    const upperSql = sql.trim().toUpperCase();
+    for (const keyword of DANGEROUS_KEYWORDS) {
+      if (upperSql.startsWith(keyword)) {
+        return keyword;
+      }
+    }
+    return null;
+  };
 
+  const executeQueryDirectly = async () => {
     setLoading(true);
     setError(null);
     setResults(null);
@@ -96,6 +110,32 @@ function DevConsoleContent() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const executeQuery = async () => {
+    if (!query.trim()) return;
+
+    const dangerousOp = getDangerousOperation(query);
+    if (dangerousOp) {
+      setWarningMessage(
+        `You are about to execute a ${dangerousOp} operation. This may permanently modify or delete data. Are you sure you want to proceed?`
+      );
+      setShowWarning(true);
+      return;
+    }
+
+    executeQueryDirectly();
+  };
+
+  const handleConfirmExecution = () => {
+    setShowWarning(false);
+    setWarningMessage("");
+    executeQueryDirectly();
+  };
+
+  const handleCancelExecution = () => {
+    setShowWarning(false);
+    setWarningMessage("");
   };
 
   const addToHistory = (sql, status) => {
@@ -116,6 +156,108 @@ function DevConsoleContent() {
         gap: "20px",
       }}
     >
+      {/* Warning Modal for Dangerous Operations */}
+      {showWarning && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1000,
+          }}
+        >
+          <div
+            style={{
+              background: "white",
+              borderRadius: "8px",
+              padding: "24px",
+              maxWidth: "450px",
+              boxShadow: "0 4px 20px rgba(0, 0, 0, 0.15)",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "12px",
+                marginBottom: "16px",
+              }}
+            >
+              <div
+                style={{
+                  background: "#fef2f2",
+                  borderRadius: "50%",
+                  padding: "10px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <AlertTriangle size={24} color="#dc2626" />
+              </div>
+              <h3 style={{ margin: 0, color: "#dc2626", fontSize: "18px" }}>
+                Warning: Dangerous Operation
+              </h3>
+            </div>
+            <p style={{ color: "#4b5563", marginBottom: "20px", lineHeight: "1.5" }}>
+              {warningMessage}
+            </p>
+            <div
+              style={{
+                background: "#fefce8",
+                border: "1px solid #fef08a",
+                borderRadius: "4px",
+                padding: "10px 12px",
+                marginBottom: "20px",
+                fontSize: "13px",
+                fontFamily: "monospace",
+                color: "#854d0e",
+                maxHeight: "80px",
+                overflow: "auto",
+              }}
+            >
+              {query}
+            </div>
+            <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
+              <button
+                onClick={handleCancelExecution}
+                style={{
+                  background: "#f3f4f6",
+                  color: "#374151",
+                  border: "1px solid #d1d5db",
+                  padding: "8px 16px",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                  fontWeight: "500",
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmExecution}
+                style={{
+                  background: "#dc2626",
+                  color: "white",
+                  border: "none",
+                  padding: "8px 16px",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                  fontWeight: "500",
+                }}
+              >
+                Execute Anyway
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="header-section">
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
           <h1>Dev Mode: SQL Console</h1>
