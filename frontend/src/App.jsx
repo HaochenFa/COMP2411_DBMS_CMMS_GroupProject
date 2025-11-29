@@ -5,6 +5,7 @@ import Dashboard from "./components/Dashboard";
 import EntityManager from "./components/EntityManager";
 import RelationshipManager from "./components/RelationshipManager";
 import SafetySearch from "./components/SafetySearch";
+import ReportGenerator from "./components/ReportGenerator";
 import DevConsole from "./components/DevConsole";
 import "./App.css";
 
@@ -15,6 +16,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/safety-search" element={<SafetySearch />} />
+          <Route path="/reports" element={<ReportGenerator />} />
 
           <Route
             path="/persons"

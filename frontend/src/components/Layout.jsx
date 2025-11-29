@@ -36,6 +36,9 @@ export default function Layout({ children }) {
         <NavLink to="/safety-search" icon={ShieldAlert}>
           Safety Search
         </NavLink>
+        <NavLink to="/reports" icon={FileText}>
+          Reports
+        </NavLink>
         <div className="sidebar-section">Management</div>
         <NavLink to="/persons" icon={Users}>
           People

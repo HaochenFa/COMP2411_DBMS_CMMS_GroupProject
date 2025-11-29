@@ -61,6 +61,8 @@ gantt
     Documentation              :done, docs, 2025-11-28, 1d
     section Phase 5
     Test Suite Implementation  :done, testing, 2025-11-29, 1d
+    section Phase 6
+    PDF Report Generation      :done, reports, 2025-11-29, 1d
 ```
 
 | Phase | Date | Milestone |
@@ -74,6 +76,7 @@ gantt
 | Feature Addition | Nov 28 | Safety Search, Dev Console, cascading dropdowns |
 | Documentation | Nov 28 | Comprehensive README update |
 | Testing | Nov 29 | Comprehensive test suites (pytest, Vitest) |
+| Report Generation | Nov 29 | PDF report generation with data analysis |
 
 ---
 
@@ -216,6 +219,7 @@ flowchart LR
         EM[Entity Manager]
         RM[Relationship Manager]
         SS[Safety Search]
+        RG[Report Generator]
         DC[Dev Console]
     end
 
@@ -234,10 +238,11 @@ flowchart LR
         T5[(Maintenance)]
     end
 
-    U1 & U2 & U3 --> D & EM & RM & SS & DC
+    U1 & U2 & U3 --> D & EM & RM & SS & RG & DC
     D --> RPT
     EM & RM --> CRUD
     SS --> CRUD
+    RG --> RPT
     DC --> QRY
     EM --> IMP
 
@@ -297,6 +302,8 @@ mindmap
 | **API Design** | RESTful endpoints | Consistent CRUD patterns across all entities |
 | **Error Handling** | Comprehensive error responses | JSON error messages with MySQL error codes |
 | **Data Persistence** | localStorage for Dev Console | Query history survives browser refresh |
+| **PDF Reports** | ReportLab + Matplotlib | Professional PDF generation with charts |
+| **Report Customization** | Selectable sections | Users choose which data to include |
 | **Testing** | Comprehensive test suites | 139 automated tests across backend, frontend, desktop |
 | **Test Coverage** | Multi-layer testing | Unit tests, integration tests, API tests |
 
@@ -406,10 +413,11 @@ quadrantChart
    - Implement caching layer (Redis)
    - Optimize N+1 queries
 
-2. **Enhanced Reporting**
-   - Export reports to PDF/Excel
+2. **Enhanced Reporting** ✅ (Partially Implemented)
+   - ~~Export reports to PDF~~ ✅ Completed
    - Custom date range filtering
    - Scheduled report generation
+   - Excel export option
 
 3. **Mobile Responsiveness**
    - Improve mobile UI for tablets/phones
@@ -520,6 +528,13 @@ flowchart TB
 | `/api/search/safety` | Chemical hazard search |
 | `/api/import` | Bulk CSV import |
 
+#### PDF Report Endpoints
+
+| Endpoint | Description |
+|----------|-------------|
+| `/api/reports/comprehensive-data` | Get all report data (JSON) |
+| `/api/reports/generate-pdf` | Generate comprehensive PDF report |
+
 ### 5.3 Frontend Component Architecture
 
 ```mermaid
@@ -594,14 +609,16 @@ flowchart LR
         IMP[📥 CSV Import]
     end
 
-    subgraph Reports["Analytics"]
+    subgraph Reports["Analytics & Export"]
         MS[Maintenance Summary]
         PS[People Summary]
         AS[Activity Summary]
         SchS[School Stats]
+        PDF[📄 PDF Reports]
     end
 
     D --> MS & PS & AS & SchS
+    PDF --> MS & PS & AS & SchS
 ```
 
 ### 6.2 Executive Dashboard
@@ -660,7 +677,30 @@ flowchart LR
 - **Warning Flags**: Red alert with ⚠️ icon for `active_chemical = true`
 - Shows location details (building, room, floor) and frequency
 
-### 6.6 Developer Console
+### 6.6 PDF Report Generation
+
+**Purpose**: Generate professional PDF reports with comprehensive data analysis
+
+**Features**:
+
+- **Section Selection**: Choose which sections to include in the report
+  - Executive Summary (KPI metrics and overview)
+  - Maintenance Analysis (tasks by location/type with charts)
+  - Personnel Overview (staff by role and status)
+  - Activities Statistics (events summary with organizers)
+  - Department Statistics (school/faculty data)
+  - Safety Report (chemical hazard analysis)
+- **PolyU Branding**: Professional styling with university colors (#A6192E, #B08E55)
+- **Data Visualization**: Bar charts and pie charts embedded in PDF
+- **Automatic Download**: One-click PDF generation and download
+
+**Technical Implementation**:
+
+- Backend: ReportLab for PDF generation, Matplotlib for charts
+- Frontend: React component with section checkboxes
+- API: `/api/reports/generate-pdf` returns PDF binary
+
+### 6.7 Developer Console
 
 **Purpose**: Direct database access for debugging and advanced queries
 
@@ -674,7 +714,7 @@ flowchart LR
 - Error display with MySQL error messages
 - **Danger Zone Warning**: Alerts users to potential data risks
 
-### 6.7 Business Rule Enforcement
+### 6.8 Business Rule Enforcement
 
 ```mermaid
 flowchart TD
@@ -693,7 +733,7 @@ flowchart TD
     R5 -->|Blocks| LocationDelete[Location Deletion]
 ```
 
-### 6.8 Automated Testing
+### 6.9 Automated Testing
 
 **Purpose**: Ensure code quality and prevent regressions through comprehensive test suites
 
@@ -764,6 +804,7 @@ The **PolyU CMMS** is a well-structured, functional Campus Maintenance and Manag
 - **Solid technical foundations** with React, Flask, and MySQL
 - **Clean separation of concerns** across frontend, backend, and database layers
 - **User-friendly features** including dashboards, CRUD operations, and safety search
+- **Professional PDF report generation** with PolyU branding and data visualization
 - **Developer productivity tools** like the Dev Console and bulk import
 - **Comprehensive test suites** with 139 automated tests covering all layers:
   - Backend: 96 pytest tests (unit + integration)
