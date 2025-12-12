@@ -25,9 +25,12 @@ export default function LoginPage() {
   };
 
   const roleDescriptions = {
-    [ROLES.ADMIN]: "Full access to all features including Dev Console, CRUD operations, and reports.",
-    [ROLES.EXECUTIVE]: "View dashboard, reports, and safety search. Read-only access to all entities.",
-    [ROLES.STAFF]: "Limited access to safety search and view entities. No access to dashboard or reports.",
+    [ROLES.ADMIN]:
+      "Full access to all features including Dev Console, CRUD operations, and reports.",
+    [ROLES.EXECUTIVE]:
+      "View dashboard, reports, and safety search. Read-only access to all entities.",
+    [ROLES.STAFF]:
+      "Limited access to safety search and view entities. No access to dashboard or reports.",
   };
 
   return (
@@ -43,7 +46,9 @@ export default function LoginPage() {
             <div className="current-role">
               <User size={48} />
               <h2>Currently logged in as</h2>
-              <span className={`role-badge role-${role.toLowerCase()}`}>{role}</span>
+              <span className={`role-badge role-${role.toLowerCase()}`}>
+                {role}
+              </span>
             </div>
             <p className="role-description">{roleDescriptions[role]}</p>
             <div className="login-actions">
@@ -69,7 +74,9 @@ export default function LoginPage() {
                   >
                     <Icon size={32} />
                     <span className="role-name">{roleOption}</span>
-                    <span className="role-desc">{roleDescriptions[roleOption]}</span>
+                    <span className="role-desc">
+                      {roleDescriptions[roleOption]}
+                    </span>
                   </div>
                 );
               })}
@@ -83,4 +90,3 @@ export default function LoginPage() {
     </div>
   );
 }
-

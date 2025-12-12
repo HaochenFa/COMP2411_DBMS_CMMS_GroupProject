@@ -23,7 +23,12 @@ const defaultProps = {
   createFields: [
     { name: "personal_id", label: "ID", required: true },
     { name: "name", label: "Name", required: true },
-    { name: "gender", label: "Gender", type: "select", options: ["Male", "Female"] },
+    {
+      name: "gender",
+      label: "Gender",
+      type: "select",
+      options: ["Male", "Female"],
+    },
   ],
 };
 
@@ -81,7 +86,9 @@ describe("EntityManager Component", () => {
   });
 
   it("should display error when fetch fails", async () => {
-    axios.get.mockRejectedValue({ response: { data: { error: "Connection failed" } } });
+    axios.get.mockRejectedValue({
+      response: { data: { error: "Connection failed" } },
+    });
 
     render(<EntityManager {...defaultProps} />);
 
@@ -97,8 +104,12 @@ describe("EntityManager Component", () => {
       expect(screen.getByText("John Doe")).toBeInTheDocument();
     });
 
-    expect(screen.getByRole("button", { name: /export csv/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /import csv/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /export csv/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /import csv/i }),
+    ).toBeInTheDocument();
   });
 
   it("should export data as CSV", async () => {

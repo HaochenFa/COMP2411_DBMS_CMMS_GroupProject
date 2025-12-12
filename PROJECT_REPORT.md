@@ -65,18 +65,18 @@ gantt
     PDF Report Generation      :done, reports, 2025-11-29, 1d
 ```
 
-| Phase | Date | Milestone |
-|-------|------|-----------|
-| Initialization | Nov 17 | Project setup, .gitignore configuration |
-| Backend Setup | Nov 26 | Flask API, database schema, initial CRUD |
-| UI Development | Nov 26 | React frontend, dark theme, Recharts integration |
-| Docker Integration | Nov 27 | Containerization, docker-compose setup |
-| Electron Wrapper | Nov 27 | Desktop application packaging |
-| UI Refinement | Nov 27 | PolyU branding, red wine theme |
-| Feature Addition | Nov 28 | Safety Search, Dev Console, cascading dropdowns |
-| Documentation | Nov 28 | Comprehensive README update |
-| Testing | Nov 29 | Comprehensive test suites (pytest, Vitest) |
-| Report Generation | Nov 29 | PDF report generation with data analysis |
+| Phase              | Date   | Milestone                                        |
+| ------------------ | ------ | ------------------------------------------------ |
+| Initialization     | Nov 17 | Project setup, .gitignore configuration          |
+| Backend Setup      | Nov 26 | Flask API, database schema, initial CRUD         |
+| UI Development     | Nov 26 | React frontend, dark theme, Recharts integration |
+| Docker Integration | Nov 27 | Containerization, docker-compose setup           |
+| Electron Wrapper   | Nov 27 | Desktop application packaging                    |
+| UI Refinement      | Nov 27 | PolyU branding, red wine theme                   |
+| Feature Addition   | Nov 28 | Safety Search, Dev Console, cascading dropdowns  |
+| Documentation      | Nov 28 | Comprehensive README update                      |
+| Testing            | Nov 29 | Comprehensive test suites (pytest, Vitest)       |
+| Report Generation  | Nov 29 | PDF report generation with data analysis         |
 
 ---
 
@@ -89,33 +89,33 @@ flowchart TB
     subgraph Desktop["Desktop Layer"]
         E[Electron App<br/>Cross-platform Wrapper]
     end
-    
+
     subgraph Frontend["Frontend Layer"]
         R[React + Vite<br/>Port 5173]
         RC[Recharts<br/>Data Visualization]
         AX[Axios<br/>HTTP Client]
     end
-    
+
     subgraph Backend["Backend Layer"]
         F[Flask REST API<br/>Port 5050]
         CORS[Flask-CORS]
     end
-    
+
     subgraph Database["Database Layer"]
         M[(MySQL 8.0<br/>cmms_db)]
     end
-    
+
     subgraph Docker["Docker Compose"]
         DC[Container Orchestration]
     end
-    
+
     E --> R
     R --> RC
     R --> AX
     AX -->|HTTP/JSON| F
     F --> CORS
     F -->|mysql-connector| M
-    
+
     DC -.->|manages| R
     DC -.->|manages| F
     DC -.->|manages| M
@@ -130,7 +130,7 @@ erDiagram
     Person }o--o{ Activity : "participates in"
     Person }o--o{ School : "affiliated with"
     Person ||--o{ Person : "supervises"
-    
+
     School ||--o{ Location : "contains"
     Location ||--o{ Activity : "hosts"
     Location ||--o{ Maintenance : "requires"
@@ -167,7 +167,7 @@ erDiagram
         varchar building
         date assigned_date
     }
-    
+
     Location {
         int location_id PK
         varchar room
@@ -177,7 +177,7 @@ erDiagram
         varchar campus
         varchar school_name FK
     }
-    
+
     Activity {
         varchar activity_id PK
         varchar type
@@ -185,7 +185,7 @@ erDiagram
         varchar organiser_id FK
         int location_id FK
     }
-    
+
     Maintenance {
         int maintenance_id PK
         varchar type
@@ -196,18 +196,18 @@ erDiagram
         datetime scheduled_time
         datetime end_time
     }
-    
+
     ExternalCompany {
         int company_id PK
         varchar name
         varchar contact_info
     }
-    
+
     Participation {
         varchar personal_id PK
         varchar activity_id PK
     }
-    
+
     Affiliation {
         varchar personal_id PK
         varchar department PK
@@ -303,28 +303,28 @@ mindmap
       Maintenance tracking per building
 ```
 
-| Category | Strength | Details |
-|----------|----------|---------|
-| **Architecture** | Clean 3-tier separation | Frontend, Backend API, Database are fully decoupled |
-| **Deployment** | Docker containerization | Single-command deployment via `docker-compose` |
-| **Cross-platform** | Electron desktop app | Native-like experience on Windows/macOS/Linux |
-| **UX Design** | PolyU-branded theme | Professional red wine and white color scheme |
-| **Access Control** | Role-based permissions | Admin, Executive, Staff roles with granular permissions |
-| **Data Visualization** | Recharts integration | Interactive bar charts, pie charts for analytics |
-| **Developer Tools** | Dev Console | Raw SQL execution with query history persistence |
-| **Safety Features** | Chemical hazard tracking | Safety Search with warning flags for hazardous tasks |
-| **Data Management** | Bulk CSV import | Efficient batch data loading capability |
-| **Dynamic Forms** | Cascading dropdowns | Smart Building → Room selection with filtering |
-| **Business Rules** | Profile limits | Enforced limits: 10 Mid-level Managers, 50 Base-level Workers |
-| **Code Quality** | Reusable components | Generic `EntityManager` and `RelationshipManager` |
-| **API Design** | RESTful endpoints | Consistent CRUD patterns across all entities |
-| **Error Handling** | Comprehensive error responses | JSON error messages with MySQL error codes |
-| **Data Persistence** | localStorage for Dev Console | Query history survives browser refresh |
-| **PDF Reports** | ReportLab + Matplotlib | Professional PDF generation with charts |
-| **Report Customization** | Selectable sections | Users choose which data to include |
-| **Testing** | Comprehensive test suites | 148 automated tests across backend, frontend, desktop |
-| **Test Coverage** | Multi-layer testing | Unit tests, integration tests, API tests |
-| **Building Supervision** | Manager oversight | Track which managers supervise which buildings |
+| Category                 | Strength                      | Details                                                       |
+| ------------------------ | ----------------------------- | ------------------------------------------------------------- |
+| **Architecture**         | Clean 3-tier separation       | Frontend, Backend API, Database are fully decoupled           |
+| **Deployment**           | Docker containerization       | Single-command deployment via `docker-compose`                |
+| **Cross-platform**       | Electron desktop app          | Native-like experience on Windows/macOS/Linux                 |
+| **UX Design**            | PolyU-branded theme           | Professional red wine and white color scheme                  |
+| **Access Control**       | Role-based permissions        | Admin, Executive, Staff roles with granular permissions       |
+| **Data Visualization**   | Recharts integration          | Interactive bar charts, pie charts for analytics              |
+| **Developer Tools**      | Dev Console                   | Raw SQL execution with query history persistence              |
+| **Safety Features**      | Chemical hazard tracking      | Safety Search with warning flags for hazardous tasks          |
+| **Data Management**      | Bulk CSV import               | Efficient batch data loading capability                       |
+| **Dynamic Forms**        | Cascading dropdowns           | Smart Building → Room selection with filtering                |
+| **Business Rules**       | Profile limits                | Enforced limits: 10 Mid-level Managers, 50 Base-level Workers |
+| **Code Quality**         | Reusable components           | Generic `EntityManager` and `RelationshipManager`             |
+| **API Design**           | RESTful endpoints             | Consistent CRUD patterns across all entities                  |
+| **Error Handling**       | Comprehensive error responses | JSON error messages with MySQL error codes                    |
+| **Data Persistence**     | localStorage for Dev Console  | Query history survives browser refresh                        |
+| **PDF Reports**          | ReportLab + Matplotlib        | Professional PDF generation with charts                       |
+| **Report Customization** | Selectable sections           | Users choose which data to include                            |
+| **Testing**              | Comprehensive test suites     | 148 automated tests across backend, frontend, desktop         |
+| **Test Coverage**        | Multi-layer testing           | Unit tests, integration tests, API tests                      |
+| **Building Supervision** | Manager oversight             | Track which managers supervise which buildings                |
 
 ### 3.2 Weaknesses ⚠️
 
@@ -347,19 +347,19 @@ mindmap
       No backup strategy
 ```
 
-| Category | Weakness | Impact |
-|----------|----------|--------|
+| Category                   | Weakness                                | Impact                                       |
+| -------------------------- | --------------------------------------- | -------------------------------------------- |
 | **Backend Authentication** | Frontend-only role-based access control | API endpoints not protected at backend level |
-| **API Security** | Dev Console allows all SQL queries | Vulnerable to data manipulation/deletion |
-| **Database Security** | Hardcoded credentials in docker-compose | Security risk in production |
-| **Input Validation** | Limited server-side validation | Potential for invalid data entry |
-| **Pagination** | No pagination for large datasets | Performance degradation with data growth |
-| **Caching** | No caching mechanism | Repeated database queries for same data |
-| **Transactions** | Limited transaction management | Partial failures possible in bulk operations |
-| **Audit Trail** | No audit logging | Cannot track who changed what |
-| **Backup Strategy** | No documented backup procedures | Data loss risk |
-| **API Rate Limiting** | No rate limiting | Vulnerable to abuse/DoS |
-| **Frontend State** | No global state management | Prop drilling, potential inconsistencies |
+| **API Security**           | Dev Console allows all SQL queries      | Vulnerable to data manipulation/deletion     |
+| **Database Security**      | Hardcoded credentials in docker-compose | Security risk in production                  |
+| **Input Validation**       | Limited server-side validation          | Potential for invalid data entry             |
+| **Pagination**             | No pagination for large datasets        | Performance degradation with data growth     |
+| **Caching**                | No caching mechanism                    | Repeated database queries for same data      |
+| **Transactions**           | Limited transaction management          | Partial failures possible in bulk operations |
+| **Audit Trail**            | No audit logging                        | Cannot track who changed what                |
+| **Backup Strategy**        | No documented backup procedures         | Data loss risk                               |
+| **API Rate Limiting**      | No rate limiting                        | Vulnerable to abuse/DoS                      |
+| **Frontend State**         | No global state management              | Prop drilling, potential inconsistencies     |
 
 ---
 
@@ -487,75 +487,75 @@ flowchart TB
     DevOps --> Database
 ```
 
-| Layer | Technology | Version/Details |
-|-------|------------|-----------------|
-| **Frontend** | React | Functional components with Hooks |
-| **Build Tool** | Vite | Fast HMR, ESBuild bundling |
-| **UI Icons** | lucide-react | Modern icon library |
-| **Charts** | Recharts | React charting library |
-| **HTTP Client** | Axios | Promise-based HTTP |
-| **Routing** | react-router-dom | SPA navigation |
-| **Backend** | Flask | Python web framework |
-| **CORS** | flask-cors | Cross-origin resource sharing |
-| **Database Driver** | mysql-connector-python | MySQL connectivity |
-| **Environment** | python-dotenv | .env file support |
-| **Database** | MySQL 8.0 | Relational database |
-| **Desktop** | Electron | Cross-platform app |
-| **Container** | Docker | Application containerization |
-| **Orchestration** | Docker Compose | Multi-container management |
+| Layer               | Technology             | Version/Details                  |
+| ------------------- | ---------------------- | -------------------------------- |
+| **Frontend**        | React                  | Functional components with Hooks |
+| **Build Tool**      | Vite                   | Fast HMR, ESBuild bundling       |
+| **UI Icons**        | lucide-react           | Modern icon library              |
+| **Charts**          | Recharts               | React charting library           |
+| **HTTP Client**     | Axios                  | Promise-based HTTP               |
+| **Routing**         | react-router-dom       | SPA navigation                   |
+| **Backend**         | Flask                  | Python web framework             |
+| **CORS**            | flask-cors             | Cross-origin resource sharing    |
+| **Database Driver** | mysql-connector-python | MySQL connectivity               |
+| **Environment**     | python-dotenv          | .env file support                |
+| **Database**        | MySQL 8.0              | Relational database              |
+| **Desktop**         | Electron               | Cross-platform app               |
+| **Container**       | Docker                 | Application containerization     |
+| **Orchestration**   | Docker Compose         | Multi-container management       |
 
 ### 5.2 API Endpoint Summary
 
 #### Entity CRUD Endpoints
 
-| Endpoint | Methods | Description |
-|----------|---------|-------------|
-| `/api/persons` | GET, POST | List/create persons |
-| `/api/persons/<id>` | PUT, DELETE | Update/delete person |
-| `/api/profiles` | GET, POST | List/create profiles |
-| `/api/schools` | GET, POST | List/create schools |
-| `/api/schools/<id>` | PUT, DELETE | Update/delete school |
-| `/api/locations` | GET, POST | List/create locations |
-| `/api/locations/<id>` | PUT, DELETE | Update/delete location |
-| `/api/activities` | GET, POST | List/create activities |
-| `/api/activities/<id>` | PUT, DELETE | Update/delete activity |
-| `/api/maintenance` | GET, POST | List/create maintenance tasks |
-| `/api/maintenance/<id>` | PUT, DELETE | Update/delete maintenance |
-| `/api/external-companies` | GET, POST | List/create companies |
+| Endpoint                  | Methods     | Description                   |
+| ------------------------- | ----------- | ----------------------------- |
+| `/api/persons`            | GET, POST   | List/create persons           |
+| `/api/persons/<id>`       | PUT, DELETE | Update/delete person          |
+| `/api/profiles`           | GET, POST   | List/create profiles          |
+| `/api/schools`            | GET, POST   | List/create schools           |
+| `/api/schools/<id>`       | PUT, DELETE | Update/delete school          |
+| `/api/locations`          | GET, POST   | List/create locations         |
+| `/api/locations/<id>`     | PUT, DELETE | Update/delete location        |
+| `/api/activities`         | GET, POST   | List/create activities        |
+| `/api/activities/<id>`    | PUT, DELETE | Update/delete activity        |
+| `/api/maintenance`        | GET, POST   | List/create maintenance tasks |
+| `/api/maintenance/<id>`   | PUT, DELETE | Update/delete maintenance     |
+| `/api/external-companies` | GET, POST   | List/create companies         |
 
 #### Relationship Endpoints
 
-| Endpoint | Methods | Description |
-|----------|---------|-------------|
+| Endpoint              | Methods   | Description           |
+| --------------------- | --------- | --------------------- |
 | `/api/participations` | GET, POST | Person-Activity links |
-| `/api/affiliations` | GET, POST | Person-School links |
+| `/api/affiliations`   | GET, POST | Person-School links   |
 
 #### Report Endpoints
 
-| Endpoint | Description |
-|----------|-------------|
-| `/api/reports/maintenance-summary` | Maintenance by location/type |
-| `/api/reports/people-summary` | People by role/status |
-| `/api/reports/activities-summary` | Activities by type/organizer |
-| `/api/reports/school-stats` | School statistics |
-| `/api/reports/maintenance-frequency` | Frequency analysis |
-| `/api/reports/manager-buildings` | Manager building supervision report |
+| Endpoint                             | Description                         |
+| ------------------------------------ | ----------------------------------- |
+| `/api/reports/maintenance-summary`   | Maintenance by location/type        |
+| `/api/reports/people-summary`        | People by role/status               |
+| `/api/reports/activities-summary`    | Activities by type/organizer        |
+| `/api/reports/school-stats`          | School statistics                   |
+| `/api/reports/maintenance-frequency` | Frequency analysis                  |
+| `/api/reports/manager-buildings`     | Manager building supervision report |
 
 #### Special Endpoints
 
-| Endpoint | Description |
-|----------|-------------|
-| `/api/health` | Health check |
-| `/api/query` | Execute SQL (Dev Console) |
-| `/api/search/safety` | Chemical hazard search |
-| `/api/import` | Bulk CSV import |
+| Endpoint             | Description               |
+| -------------------- | ------------------------- |
+| `/api/health`        | Health check              |
+| `/api/query`         | Execute SQL (Dev Console) |
+| `/api/search/safety` | Chemical hazard search    |
+| `/api/import`        | Bulk CSV import           |
 
 #### PDF Report Endpoints
 
-| Endpoint | Description |
-|----------|-------------|
-| `/api/reports/comprehensive-data` | Get all report data (JSON) |
-| `/api/reports/generate-pdf` | Generate comprehensive PDF report |
+| Endpoint                          | Description                       |
+| --------------------------------- | --------------------------------- |
+| `/api/reports/comprehensive-data` | Get all report data (JSON)        |
+| `/api/reports/generate-pdf`       | Generate comprehensive PDF report |
 
 ### 5.3 Frontend Component Architecture
 
@@ -603,15 +603,15 @@ flowchart TB
 
 **Key Design Decisions:**
 
-| Decision | Implementation | Rationale |
-|----------|----------------|-----------|
-| **Dynamic Age Calculation** | `TIMESTAMPDIFF(YEAR, date_of_birth, CURDATE())` | Avoids stale data, always current |
-| **Building Denormalization** | VARCHAR attribute in Location | Simplified schema, reduced joins |
-| **Profile Limits** | API-level enforcement | 10 Mid-level Managers, 50 Base-level Workers |
-| **Chemical Tracking** | Boolean `active_chemical` flag | Simple safety search implementation |
-| **Self-referencing FK** | `supervisor_id` → `personal_id` | Hierarchical supervisor relationships |
-| **Building Supervision** | `BuildingSupervision` M:N table | Managers can supervise multiple buildings |
-| **Scheduled Maintenance** | `scheduled_time`, `end_time` in Maintenance | Time-based filtering for safety search |
+| Decision                     | Implementation                                  | Rationale                                    |
+| ---------------------------- | ----------------------------------------------- | -------------------------------------------- |
+| **Dynamic Age Calculation**  | `TIMESTAMPDIFF(YEAR, date_of_birth, CURDATE())` | Avoids stale data, always current            |
+| **Building Denormalization** | VARCHAR attribute in Location                   | Simplified schema, reduced joins             |
+| **Profile Limits**           | API-level enforcement                           | 10 Mid-level Managers, 50 Base-level Workers |
+| **Chemical Tracking**        | Boolean `active_chemical` flag                  | Simple safety search implementation          |
+| **Self-referencing FK**      | `supervisor_id` → `personal_id`                 | Hierarchical supervisor relationships        |
+| **Building Supervision**     | `BuildingSupervision` M:N table                 | Managers can supervise multiple buildings    |
+| **Scheduled Maintenance**    | `scheduled_time`, `end_time` in Maintenance     | Time-based filtering for safety search       |
 
 ---
 
@@ -687,17 +687,17 @@ flowchart TB
 
 **Role Permissions**:
 
-| Permission | Admin | Executive | Staff |
-|------------|-------|-----------|-------|
-| View Dashboard | ✅ | ✅ | ❌ |
-| View Reports | ✅ | ✅ | ❌ |
-| View Safety Search | ✅ | ✅ | ✅ |
-| View Dev Console | ✅ | ❌ | ❌ |
-| View Building Supervision | ✅ | ✅ | ❌ |
-| Create Records | ✅ | ❌ | ❌ |
-| Update Records | ✅ | ❌ | ❌ |
-| Delete Records | ✅ | ❌ | ❌ |
-| View Entities | ✅ | ✅ | ✅ |
+| Permission                | Admin | Executive | Staff |
+| ------------------------- | ----- | --------- | ----- |
+| View Dashboard            | ✅    | ✅        | ❌    |
+| View Reports              | ✅    | ✅        | ❌    |
+| View Safety Search        | ✅    | ✅        | ✅    |
+| View Dev Console          | ✅    | ❌        | ❌    |
+| View Building Supervision | ✅    | ✅        | ❌    |
+| Create Records            | ✅    | ❌        | ❌    |
+| Update Records            | ✅    | ❌        | ❌    |
+| Delete Records            | ✅    | ❌        | ❌    |
+| View Entities             | ✅    | ✅        | ✅    |
 
 **Implementation**:
 
@@ -723,12 +723,12 @@ flowchart TB
 
 **Supported Entities & Fields**:
 
-| Entity | Key Fields |
-|--------|------------|
-| **People** | Personal ID, Name, Gender, DOB, Entry Date, Supervisor |
-| **Schools** | Name, Department, Faculty, HQ Building |
-| **Activities** | ID, Type, Time, Organizer, Location |
-| **Maintenance** | Type, Frequency, Location, Chemical Usage, Contractor |
+| Entity          | Key Fields                                             |
+| --------------- | ------------------------------------------------------ |
+| **People**      | Personal ID, Name, Gender, DOB, Entry Date, Supervisor |
+| **Schools**     | Name, Department, Faculty, HQ Building                 |
+| **Activities**  | ID, Type, Time, Organizer, Location                    |
+| **Maintenance** | Type, Frequency, Location, Chemical Usage, Contractor  |
 
 **CRUD Features**:
 
@@ -871,12 +871,12 @@ flowchart TB
 
 **Test Coverage**:
 
-| Component | Framework | Tests | Coverage |
-|-----------|-----------|-------|----------|
-| Backend | pytest + pytest-cov | 105 (94 unit + 11 integration) | API endpoints, DB utilities |
-| Frontend | Vitest + React Testing Library | 39 | Components, API integration |
-| Desktop | Vitest | 4 | Electron utilities |
-| **Total** | - | **148** | - |
+| Component | Framework                      | Tests                          | Coverage                    |
+| --------- | ------------------------------ | ------------------------------ | --------------------------- |
+| Backend   | pytest + pytest-cov            | 105 (94 unit + 11 integration) | API endpoints, DB utilities |
+| Frontend  | Vitest + React Testing Library | 39                             | Components, API integration |
+| Desktop   | Vitest                         | 4                              | Electron utilities          |
+| **Total** | -                              | **148**                        | -                           |
 
 **Backend Test Categories**:
 

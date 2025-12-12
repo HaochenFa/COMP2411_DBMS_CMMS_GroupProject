@@ -1,31 +1,62 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { FileText, Download, Loader2, CheckSquare, Square, AlertCircle } from "lucide-react";
+import {
+  FileText,
+  Download,
+  Loader2,
+  CheckSquare,
+  Square,
+  AlertCircle,
+} from "lucide-react";
 
 const API_URL = "http://127.0.0.1:5050/api";
 
 const AVAILABLE_SECTIONS = [
-  { id: "executive_summary", label: "Executive Summary", description: "KPIs and overview metrics" },
-  { id: "maintenance", label: "Maintenance Analysis", description: "Tasks by location and type" },
-  { id: "personnel", label: "Personnel Overview", description: "Staff by role and status" },
+  {
+    id: "executive_summary",
+    label: "Executive Summary",
+    description: "KPIs and overview metrics",
+  },
+  {
+    id: "maintenance",
+    label: "Maintenance Analysis",
+    description: "Tasks by location and type",
+  },
+  {
+    id: "personnel",
+    label: "Personnel Overview",
+    description: "Staff by role and status",
+  },
   {
     id: "activities",
     label: "Activities Statistics",
     description: "Events and activities summary",
   },
-  { id: "schools", label: "Department Statistics", description: "School and faculty data" },
-  { id: "safety", label: "Safety Report", description: "Chemical hazard analysis" },
+  {
+    id: "schools",
+    label: "Department Statistics",
+    description: "School and faculty data",
+  },
+  {
+    id: "safety",
+    label: "Safety Report",
+    description: "Chemical hazard analysis",
+  },
 ];
 
 export default function ReportGenerator() {
-  const [selectedSections, setSelectedSections] = useState(AVAILABLE_SECTIONS.map((s) => s.id));
+  const [selectedSections, setSelectedSections] = useState(
+    AVAILABLE_SECTIONS.map((s) => s.id),
+  );
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
 
   const toggleSection = (sectionId) => {
     setSelectedSections((prev) =>
-      prev.includes(sectionId) ? prev.filter((id) => id !== sectionId) : [...prev, sectionId]
+      prev.includes(sectionId)
+        ? prev.filter((id) => id !== sectionId)
+        : [...prev, sectionId],
     );
   };
 
@@ -51,7 +82,7 @@ export default function ReportGenerator() {
       const response = await axios.post(
         `${API_URL}/reports/generate-pdf`,
         { sections: selectedSections },
-        { responseType: "blob" }
+        { responseType: "blob" },
       );
 
       // Create download link
@@ -87,7 +118,10 @@ export default function ReportGenerator() {
           setError("Failed to generate report. Please try again.");
         }
       } else {
-        setError(err.response?.data?.error || "Failed to generate report. Please try again.");
+        setError(
+          err.response?.data?.error ||
+            "Failed to generate report. Please try again.",
+        );
       }
     } finally {
       setIsGenerating(false);
@@ -98,24 +132,39 @@ export default function ReportGenerator() {
     <div className="page-container">
       <div className="header-section">
         <h2>
-          <FileText size={24} style={{ marginRight: "10px", verticalAlign: "middle" }} />
+          <FileText
+            size={24}
+            style={{ marginRight: "10px", verticalAlign: "middle" }}
+          />
           Report Generation
         </h2>
-        <p className="subtitle">Generate comprehensive PDF reports with data analysis</p>
+        <p className="subtitle">
+          Generate comprehensive PDF reports with data analysis
+        </p>
       </div>
 
       <div className="card" style={{ maxWidth: "700px" }}>
-        <h3 style={{ marginBottom: "15px", color: "#A6192E" }}>Report Sections</h3>
+        <h3 style={{ marginBottom: "15px", color: "#A6192E" }}>
+          Report Sections
+        </h3>
         <p style={{ fontSize: "0.9rem", color: "#666", marginBottom: "15px" }}>
-          Select the sections to include in your report. Each section will appear on its own page
-          with relevant charts and data tables.
+          Select the sections to include in your report. Each section will
+          appear on its own page with relevant charts and data tables.
         </p>
 
         <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
-          <button onClick={selectAll} className="secondary-btn" style={{ fontSize: "0.85rem" }}>
+          <button
+            onClick={selectAll}
+            className="secondary-btn"
+            style={{ fontSize: "0.85rem" }}
+          >
             Select All
           </button>
-          <button onClick={selectNone} className="secondary-btn" style={{ fontSize: "0.85rem" }}>
+          <button
+            onClick={selectNone}
+            className="secondary-btn"
+            style={{ fontSize: "0.85rem" }}
+          >
             Clear All
           </button>
         </div>
@@ -131,7 +180,9 @@ export default function ReportGenerator() {
                 padding: "12px 15px",
                 borderRadius: "8px",
                 cursor: "pointer",
-                background: selectedSections.includes(section.id) ? "#fef2f2" : "#f9fafb",
+                background: selectedSections.includes(section.id)
+                  ? "#fef2f2"
+                  : "#f9fafb",
                 border: selectedSections.includes(section.id)
                   ? "1px solid #A6192E"
                   : "1px solid #e5e7eb",
@@ -139,13 +190,25 @@ export default function ReportGenerator() {
               }}
             >
               {selectedSections.includes(section.id) ? (
-                <CheckSquare size={20} color="#A6192E" style={{ marginRight: "12px" }} />
+                <CheckSquare
+                  size={20}
+                  color="#A6192E"
+                  style={{ marginRight: "12px" }}
+                />
               ) : (
-                <Square size={20} color="#9ca3af" style={{ marginRight: "12px" }} />
+                <Square
+                  size={20}
+                  color="#9ca3af"
+                  style={{ marginRight: "12px" }}
+                />
               )}
               <div>
-                <div style={{ fontWeight: 500, color: "#1f2937" }}>{section.label}</div>
-                <div style={{ fontSize: "0.8rem", color: "#6b7280" }}>{section.description}</div>
+                <div style={{ fontWeight: 500, color: "#1f2937" }}>
+                  {section.label}
+                </div>
+                <div style={{ fontSize: "0.8rem", color: "#6b7280" }}>
+                  {section.description}
+                </div>
               </div>
             </div>
           ))}
@@ -183,7 +246,13 @@ export default function ReportGenerator() {
           </div>
         )}
 
-        <div style={{ marginTop: "25px", paddingTop: "20px", borderTop: "1px solid #e5e7eb" }}>
+        <div
+          style={{
+            marginTop: "25px",
+            paddingTop: "20px",
+            borderTop: "1px solid #e5e7eb",
+          }}
+        >
           <button
             onClick={handleGenerateReport}
             disabled={isGenerating || selectedSections.length === 0}
@@ -196,11 +265,17 @@ export default function ReportGenerator() {
               padding: "14px 20px",
               fontSize: "1rem",
               fontWeight: 600,
-              background: isGenerating || selectedSections.length === 0 ? "#d1d5db" : "#A6192E",
+              background:
+                isGenerating || selectedSections.length === 0
+                  ? "#d1d5db"
+                  : "#A6192E",
               color: "white",
               border: "none",
               borderRadius: "8px",
-              cursor: isGenerating || selectedSections.length === 0 ? "not-allowed" : "pointer",
+              cursor:
+                isGenerating || selectedSections.length === 0
+                  ? "not-allowed"
+                  : "pointer",
               transition: "background 0.2s ease",
             }}
           >
@@ -229,7 +304,8 @@ export default function ReportGenerator() {
               textAlign: "center",
             }}
           >
-            {selectedSections.length} of {AVAILABLE_SECTIONS.length} sections selected
+            {selectedSections.length} of {AVAILABLE_SECTIONS.length} sections
+            selected
           </p>
         </div>
       </div>

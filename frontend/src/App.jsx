@@ -1,4 +1,9 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 import Layout from "./components/Layout";
 import Dashboard from "./components/Dashboard";
 import EntityManager from "./components/EntityManager";
@@ -115,7 +120,11 @@ function AppContent() {
               ]}
               createFields={[
                 { name: "department", label: "Dept Abbr", required: true },
-                { name: "school_name", label: "Department Name", required: true },
+                {
+                  name: "school_name",
+                  label: "Department Name",
+                  required: true,
+                },
                 {
                   name: "faculty",
                   label: "Faculty/School",
@@ -196,7 +205,15 @@ function AppContent() {
                   name: "type",
                   label: "Type",
                   type: "select",
-                  options: ["Room", "Square", "Gate", "Level", "Hall", "Lab", "Office"],
+                  options: [
+                    "Room",
+                    "Square",
+                    "Gate",
+                    "Level",
+                    "Hall",
+                    "Lab",
+                    "Office",
+                  ],
                 },
                 {
                   name: "campus",
@@ -214,7 +231,8 @@ function AppContent() {
                   type: "cascading-select",
                   optionsEndpoint: "schools",
                   optionValue: "department",
-                  optionLabel: (s) => `${s.department} - ${s.dept_name || s.school_name}`,
+                  optionLabel: (s) =>
+                    `${s.department} - ${s.dept_name || s.school_name}`,
                 },
               ]}
             />
@@ -411,7 +429,11 @@ function AppContent() {
         <Route
           path="/dev-console"
           element={
-            hasPermission("canViewDevConsole") ? <DevConsole /> : <Navigate to="/" replace />
+            hasPermission("canViewDevConsole") ? (
+              <DevConsole />
+            ) : (
+              <Navigate to="/" replace />
+            )
           }
         />
         <Route

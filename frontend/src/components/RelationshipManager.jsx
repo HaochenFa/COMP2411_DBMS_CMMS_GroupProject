@@ -5,7 +5,12 @@ import { useRole } from "../context/RoleContext";
 
 const API_URL = "http://127.0.0.1:5050/api";
 
-export default function RelationshipManager({ title, endpoint, fields, displayColumns }) {
+export default function RelationshipManager({
+  title,
+  endpoint,
+  fields,
+  displayColumns,
+}) {
   const { hasPermission } = useRole();
   const canCreate = hasPermission("canCreate");
 
@@ -19,7 +24,9 @@ export default function RelationshipManager({ title, endpoint, fields, displayCo
       setItems(res.data);
       setError(null);
     } catch (err) {
-      setError("Failed to fetch data: " + (err.response?.data?.error || err.message));
+      setError(
+        "Failed to fetch data: " + (err.response?.data?.error || err.message),
+      );
     }
   }, [endpoint]);
 
@@ -35,7 +42,9 @@ export default function RelationshipManager({ title, endpoint, fields, displayCo
       setNewItem({});
       setError(null);
     } catch (err) {
-      setError("Failed to create link: " + (err.response?.data?.error || err.message));
+      setError(
+        "Failed to create link: " + (err.response?.data?.error || err.message),
+      );
     }
   };
 
@@ -55,7 +64,11 @@ export default function RelationshipManager({ title, endpoint, fields, displayCo
         let value = item[key];
         if (value === null || value === undefined) return "";
         value = String(value);
-        if (value.includes(",") || value.includes('"') || value.includes("\n")) {
+        if (
+          value.includes(",") ||
+          value.includes('"') ||
+          value.includes("\n")
+        ) {
           value = `"${value.replace(/"/g, '""')}"`;
         }
         return value;
@@ -70,7 +83,7 @@ export default function RelationshipManager({ title, endpoint, fields, displayCo
     link.setAttribute("href", url);
     link.setAttribute(
       "download",
-      `${endpoint}_export_${new Date().toISOString().split("T")[0]}.csv`
+      `${endpoint}_export_${new Date().toISOString().split("T")[0]}.csv`,
     );
     document.body.appendChild(link);
     link.click();
@@ -82,13 +95,21 @@ export default function RelationshipManager({ title, endpoint, fields, displayCo
     <div className="page-container">
       <div
         className="header-section"
-        style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
       >
         <div>
           <h2>{title}</h2>
           <p className="subtitle">Manage relationships</p>
         </div>
-        <button onClick={handleExport} className="secondary-btn" disabled={items.length === 0}>
+        <button
+          onClick={handleExport}
+          className="secondary-btn"
+          disabled={items.length === 0}
+        >
           <Download size={16} /> Export CSV
         </button>
       </div>
@@ -102,7 +123,9 @@ export default function RelationshipManager({ title, endpoint, fields, displayCo
               key={field.name}
               placeholder={field.label}
               value={newItem[field.name] || ""}
-              onChange={(e) => setNewItem({ ...newItem, [field.name]: e.target.value })}
+              onChange={(e) =>
+                setNewItem({ ...newItem, [field.name]: e.target.value })
+              }
               required
             />
           ))}

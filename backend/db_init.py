@@ -14,7 +14,6 @@ the existing database contents.
 
 from db import init_db
 
-
 if __name__ == "__main__":
     print(
         "[db_init.py] WARNING: This will DROP and RECREATE tables defined in "

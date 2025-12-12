@@ -112,10 +112,20 @@ describe("Dashboard Component", () => {
       expect(axios.get).toHaveBeenCalledTimes(5);
     });
 
-    expect(axios.get).toHaveBeenCalledWith(expect.stringContaining("maintenance-summary"));
-    expect(axios.get).toHaveBeenCalledWith(expect.stringContaining("people-summary"));
-    expect(axios.get).toHaveBeenCalledWith(expect.stringContaining("activities-summary"));
-    expect(axios.get).toHaveBeenCalledWith(expect.stringContaining("school-stats"));
-    expect(axios.get).toHaveBeenCalledWith(expect.stringContaining("maintenance-frequency"));
+    expect(axios.get).toHaveBeenCalledWith(
+      expect.stringContaining("maintenance-summary"),
+    );
+    expect(axios.get).toHaveBeenCalledWith(
+      expect.stringContaining("people-summary"),
+    );
+    expect(axios.get).toHaveBeenCalledWith(
+      expect.stringContaining("activities-summary"),
+    );
+    expect(axios.get).toHaveBeenCalledWith(
+      expect.stringContaining("school-stats"),
+    );
+    expect(axios.get).toHaveBeenCalledWith(
+      expect.stringContaining("maintenance-frequency"),
+    );
   });
 });

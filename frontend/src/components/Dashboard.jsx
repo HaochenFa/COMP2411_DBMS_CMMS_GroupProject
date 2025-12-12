@@ -43,11 +43,19 @@ export default function Dashboard() {
         setLoading(true);
         setError(null);
         const [mSum, pSum, aSum, sStats, mFreq] = await Promise.all([
-          axios.get(`${API_URL}/reports/maintenance-summary`).then((res) => res.data),
-          axios.get(`${API_URL}/reports/people-summary`).then((res) => res.data),
-          axios.get(`${API_URL}/reports/activities-summary`).then((res) => res.data),
+          axios
+            .get(`${API_URL}/reports/maintenance-summary`)
+            .then((res) => res.data),
+          axios
+            .get(`${API_URL}/reports/people-summary`)
+            .then((res) => res.data),
+          axios
+            .get(`${API_URL}/reports/activities-summary`)
+            .then((res) => res.data),
           axios.get(`${API_URL}/reports/school-stats`).then((res) => res.data),
-          axios.get(`${API_URL}/reports/maintenance-frequency`).then((res) => res.data),
+          axios
+            .get(`${API_URL}/reports/maintenance-frequency`)
+            .then((res) => res.data),
         ]);
         setMaintenanceSummary(mSum);
         setPeopleSummary(pSum);
@@ -57,7 +65,7 @@ export default function Dashboard() {
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
         setError(
-          `Error: ${error.message || "Unknown error"}. ${error.code ? `Code: ${error.code}` : ""}`
+          `Error: ${error.message || "Unknown error"}. ${error.code ? `Code: ${error.code}` : ""}`,
         );
       } finally {
         setLoading(false);
@@ -71,7 +79,12 @@ export default function Dashboard() {
     return (
       <div
         className="dashboard-container"
-        style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100%" }}
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100%",
+        }}
       >
         <p>Loading dashboard data...</p>
       </div>
@@ -83,7 +96,12 @@ export default function Dashboard() {
       <div className="dashboard-container">
         <div
           className="error-message"
-          style={{ padding: "20px", color: "#ef4444", background: "#fee2e2", borderRadius: "8px" }}
+          style={{
+            padding: "20px",
+            color: "#ef4444",
+            background: "#fee2e2",
+            borderRadius: "8px",
+          }}
         >
           <h3>Connection Error</h3>
           <p>{error}</p>
@@ -124,11 +142,20 @@ export default function Dashboard() {
                 />
                 <YAxis stroke="#666" fontSize={12} allowDecimals={false} />
                 <Tooltip
-                  contentStyle={{ backgroundColor: "#fff", borderColor: "#ccc", color: "#333" }}
+                  contentStyle={{
+                    backgroundColor: "#fff",
+                    borderColor: "#ccc",
+                    color: "#333",
+                  }}
                   formatter={(value, name) => [`${value} tasks`, "Maintenance"]}
                   labelFormatter={(label) => `Location: ${label}`}
                 />
-                <Bar dataKey="count" fill="#A6192E" name="Tasks" radius={[3, 3, 0, 0]} />
+                <Bar
+                  dataKey="count"
+                  fill="#A6192E"
+                  name="Tasks"
+                  radius={[3, 3, 0, 0]}
+                />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -151,18 +178,29 @@ export default function Dashboard() {
                   labelLine={{ stroke: "#666", strokeWidth: 1 }}
                 >
                   {peopleSummary.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={COLORS[index % COLORS.length]}
+                    />
                   ))}
                 </Pie>
                 <Tooltip
-                  contentStyle={{ backgroundColor: "#fff", borderColor: "#ccc", color: "#333" }}
+                  contentStyle={{
+                    backgroundColor: "#fff",
+                    borderColor: "#ccc",
+                    color: "#333",
+                  }}
                   formatter={(value, name) => [`${value} people`, name]}
                 />
                 <Legend
                   layout="vertical"
                   align="right"
                   verticalAlign="middle"
-                  wrapperStyle={{ fontSize: "11px", right: 0, lineHeight: "18px" }}
+                  wrapperStyle={{
+                    fontSize: "11px",
+                    right: 0,
+                    lineHeight: "18px",
+                  }}
                   iconSize={10}
                 />
               </PieChart>
@@ -184,12 +222,27 @@ export default function Dashboard() {
                   allowDecimals={false}
                   tickFormatter={(value) => Math.floor(value)}
                 />
-                <YAxis dataKey="type" type="category" stroke="#666" width={80} fontSize={12} />
+                <YAxis
+                  dataKey="type"
+                  type="category"
+                  stroke="#666"
+                  width={80}
+                  fontSize={12}
+                />
                 <Tooltip
-                  contentStyle={{ backgroundColor: "#fff", borderColor: "#ccc", color: "#333" }}
+                  contentStyle={{
+                    backgroundColor: "#fff",
+                    borderColor: "#ccc",
+                    color: "#333",
+                  }}
                   formatter={(value) => [`${value} activities`, "Count"]}
                 />
-                <Bar dataKey="activity_count" fill="#B08E55" name="Count" radius={[0, 3, 3, 0]} />
+                <Bar
+                  dataKey="activity_count"
+                  fill="#B08E55"
+                  name="Count"
+                  radius={[0, 3, 3, 0]}
+                />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -205,11 +258,19 @@ export default function Dashboard() {
                 <XAxis dataKey="school_name" stroke="#666" fontSize={12} />
                 <YAxis stroke="#666" fontSize={12} />
                 <Tooltip
-                  contentStyle={{ backgroundColor: "#fff", borderColor: "#ccc", color: "#333" }}
+                  contentStyle={{
+                    backgroundColor: "#fff",
+                    borderColor: "#ccc",
+                    color: "#333",
+                  }}
                 />
                 <Legend wrapperStyle={{ fontSize: "12px" }} />
                 <Bar dataKey="affiliated_people" fill="#8C1526" name="People" />
-                <Bar dataKey="locations_count" fill="#5D5D5D" name="Locations" />
+                <Bar
+                  dataKey="locations_count"
+                  fill="#5D5D5D"
+                  name="Locations"
+                />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -218,7 +279,10 @@ export default function Dashboard() {
         {/* Maintenance Frequency */}
         <div className="card">
           <h3>Maintenance Frequency</h3>
-          <div className="table-wrapper" style={{ maxHeight: "200px", overflowY: "auto" }}>
+          <div
+            className="table-wrapper"
+            style={{ maxHeight: "200px", overflowY: "auto" }}
+          >
             <table style={{ fontSize: "0.85rem" }}>
               <thead>
                 <tr>

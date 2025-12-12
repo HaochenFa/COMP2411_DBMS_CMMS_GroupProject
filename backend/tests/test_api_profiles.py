@@ -1,10 +1,12 @@
 """
 Unit tests for Profile API endpoints.
 """
-import pytest
+
 import json
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
+
 import mysql.connector
+import pytest
 
 
 class TestProfilesEndpoint:
@@ -14,40 +16,48 @@ class TestProfilesEndpoint:
         """Test GET /api/profiles returns list of profiles."""
         mock_conn, mock_cursor = mock_get_db_connection
         mock_cursor.fetchall.return_value = [
-            {'personal_id': 'P001', 'name': 'John Doe', 'job_role': 'Manager',
-             'status': 'Current'}
+            {
+                "personal_id": "P001",
+                "name": "John Doe",
+                "job_role": "Manager",
+                "status": "Current",
+            }
         ]
 
-        response = client.get('/api/profiles')
+        response = client.get("/api/profiles")
 
         assert response.status_code == 200
         data = json.loads(response.data)
         assert len(data) == 1
-        assert data[0]['job_role'] == 'Manager'
+        assert data[0]["job_role"] == "Manager"
 
-    def test_create_profile_success(self, client, mock_get_db_connection, sample_profile):
+    def test_create_profile_success(
+        self, client, mock_get_db_connection, sample_profile
+    ):
         """Test POST /api/profiles creates a new profile."""
         mock_conn, mock_cursor = mock_get_db_connection
-        mock_cursor.fetchone.return_value = {'count': 0}
+        mock_cursor.fetchone.return_value = {"count": 0}
 
         response = client.post(
-            '/api/profiles',
+            "/api/profiles",
             data=json.dumps(sample_profile),
-            content_type='application/json'
+            content_type="application/json",
         )
 
         assert response.status_code == 201
         data = json.loads(response.data)
-        assert data['message'] == 'Profile created'
+        assert data["message"] == "Profile created"
 
-    def test_create_profile_missing_required_fields(self, client, mock_get_db_connection):
+    def test_create_profile_missing_required_fields(
+        self, client, mock_get_db_connection
+    ):
         """Test POST /api/profiles fails when required fields are missing."""
         mock_conn, mock_cursor = mock_get_db_connection
 
         response = client.post(
-            '/api/profiles',
-            data=json.dumps({'personal_id': 'P001'}),  # Missing job_role
-            content_type='application/json'
+            "/api/profiles",
+            data=json.dumps({"personal_id": "P001"}),  # Missing job_role
+            content_type="application/json",
         )
 
         assert response.status_code == 400
@@ -55,33 +65,27 @@ class TestProfilesEndpoint:
     def test_create_profile_mid_level_limit(self, client, mock_get_db_connection):
         """Test POST /api/profiles enforces Mid-level Manager limit."""
         mock_conn, mock_cursor = mock_get_db_connection
-        mock_cursor.fetchone.return_value = {'count': 10}  # At limit
+        mock_cursor.fetchone.return_value = {"count": 10}  # At limit
 
         response = client.post(
-            '/api/profiles',
-            data=json.dumps({
-                'personal_id': 'P002',
-                'job_role': 'Mid-level Manager'
-            }),
-            content_type='application/json'
+            "/api/profiles",
+            data=json.dumps({"personal_id": "P002", "job_role": "Mid-level Manager"}),
+            content_type="application/json",
         )
 
         assert response.status_code == 400
         data = json.loads(response.data)
-        assert 'Limit reached' in data['error']
+        assert "Limit reached" in data["error"]
 
     def test_create_profile_base_level_limit(self, client, mock_get_db_connection):
         """Test POST /api/profiles enforces Base-level Worker limit."""
         mock_conn, mock_cursor = mock_get_db_connection
-        mock_cursor.fetchone.return_value = {'count': 50}  # At limit
+        mock_cursor.fetchone.return_value = {"count": 50}  # At limit
 
         response = client.post(
-            '/api/profiles',
-            data=json.dumps({
-                'personal_id': 'P002',
-                'job_role': 'Base-level Worker'
-            }),
-            content_type='application/json'
+            "/api/profiles",
+            data=json.dumps({"personal_id": "P002", "job_role": "Base-level Worker"}),
+            content_type="application/json",
         )
 
         assert response.status_code == 400
@@ -91,18 +95,14 @@ class TestProfilesEndpoint:
         mock_conn, mock_cursor = mock_get_db_connection
 
         # For 'Manager' role, INSERT is the first execute call (no count query)
-        mock_cursor.execute.side_effect = mysql.connector.Error(
-            "Duplicate entry")
+        mock_cursor.execute.side_effect = mysql.connector.Error("Duplicate entry")
 
         response = client.post(
-            '/api/profiles',
-            data=json.dumps({
-                'personal_id': 'P001',
-                'job_role': 'Manager'
-            }),
-            content_type='application/json'
+            "/api/profiles",
+            data=json.dumps({"personal_id": "P001", "job_role": "Manager"}),
+            content_type="application/json",
         )
 
         assert response.status_code == 400
         data = json.loads(response.data)
-        assert 'Duplicate entry' in data['error']
+        assert "Duplicate entry" in data["error"]

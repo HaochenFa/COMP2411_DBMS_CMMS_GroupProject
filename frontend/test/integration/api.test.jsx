@@ -113,7 +113,9 @@ describe("Frontend-Backend Integration", () => {
       render(<EntityManager {...defaultProps} />);
 
       await waitFor(() => {
-        expect(axios.get).toHaveBeenCalledWith(expect.stringContaining("/persons"));
+        expect(axios.get).toHaveBeenCalledWith(
+          expect.stringContaining("/persons"),
+        );
       });
     });
   });

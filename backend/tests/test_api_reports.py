@@ -1,9 +1,11 @@
 """
 Unit tests for Report API endpoints.
 """
-import pytest
+
 import json
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
+
+import pytest
 
 
 class TestMaintenanceSummaryReport:
@@ -13,17 +15,16 @@ class TestMaintenanceSummaryReport:
         """Test GET /api/reports/maintenance-summary returns summary."""
         mock_conn, mock_cursor = mock_get_db_connection
         mock_cursor.fetchall.return_value = [
-            {'type': 'Cleaning', 'building': 'Block A',
-                'campus': 'Main', 'count': 5},
-            {'type': 'Repair', 'building': 'Block B', 'campus': 'Main', 'count': 3}
+            {"type": "Cleaning", "building": "Block A", "campus": "Main", "count": 5},
+            {"type": "Repair", "building": "Block B", "campus": "Main", "count": 3},
         ]
 
-        response = client.get('/api/reports/maintenance-summary')
+        response = client.get("/api/reports/maintenance-summary")
 
         assert response.status_code == 200
         data = json.loads(response.data)
         assert len(data) == 2
-        assert data[0]['count'] == 5
+        assert data[0]["count"] == 5
 
 
 class TestPeopleSummaryReport:
@@ -33,11 +34,11 @@ class TestPeopleSummaryReport:
         """Test GET /api/reports/people-summary returns summary."""
         mock_conn, mock_cursor = mock_get_db_connection
         mock_cursor.fetchall.return_value = [
-            {'job_role': 'Manager', 'status': 'Current', 'count': 10},
-            {'job_role': 'Worker', 'status': 'Current', 'count': 50}
+            {"job_role": "Manager", "status": "Current", "count": 10},
+            {"job_role": "Worker", "status": "Current", "count": 50},
         ]
 
-        response = client.get('/api/reports/people-summary')
+        response = client.get("/api/reports/people-summary")
 
         assert response.status_code == 200
         data = json.loads(response.data)
@@ -51,15 +52,15 @@ class TestActivitiesSummaryReport:
         """Test GET /api/reports/activities-summary returns summary."""
         mock_conn, mock_cursor = mock_get_db_connection
         mock_cursor.fetchall.return_value = [
-            {'type': 'Seminar', 'organiser_name': 'John Doe', 'activity_count': 5}
+            {"type": "Seminar", "organiser_name": "John Doe", "activity_count": 5}
         ]
 
-        response = client.get('/api/reports/activities-summary')
+        response = client.get("/api/reports/activities-summary")
 
         assert response.status_code == 200
         data = json.loads(response.data)
         assert len(data) == 1
-        assert data[0]['activity_count'] == 5
+        assert data[0]["activity_count"] == 5
 
 
 class TestSchoolStatsReport:
@@ -69,16 +70,21 @@ class TestSchoolStatsReport:
         """Test GET /api/reports/school-stats returns statistics."""
         mock_conn, mock_cursor = mock_get_db_connection
         mock_cursor.fetchall.return_value = [
-            {'department': 'COMP', 'school_name': 'Computing', 'faculty': 'Engineering',
-             'affiliated_people': 25, 'locations_count': 10}
+            {
+                "department": "COMP",
+                "school_name": "Computing",
+                "faculty": "Engineering",
+                "affiliated_people": 25,
+                "locations_count": 10,
+            }
         ]
 
-        response = client.get('/api/reports/school-stats')
+        response = client.get("/api/reports/school-stats")
 
         assert response.status_code == 200
         data = json.loads(response.data)
         assert len(data) == 1
-        assert data[0]['affiliated_people'] == 25
+        assert data[0]["affiliated_people"] == 25
 
 
 class TestMaintenanceFrequencyReport:
@@ -88,16 +94,16 @@ class TestMaintenanceFrequencyReport:
         """Test GET /api/reports/maintenance-frequency returns frequency analysis."""
         mock_conn, mock_cursor = mock_get_db_connection
         mock_cursor.fetchall.return_value = [
-            {'frequency': 'Daily', 'type': 'Cleaning', 'task_count': 20},
-            {'frequency': 'Weekly', 'type': 'Repair', 'task_count': 10}
+            {"frequency": "Daily", "type": "Cleaning", "task_count": 20},
+            {"frequency": "Weekly", "type": "Repair", "task_count": 10},
         ]
 
-        response = client.get('/api/reports/maintenance-frequency')
+        response = client.get("/api/reports/maintenance-frequency")
 
         assert response.status_code == 200
         data = json.loads(response.data)
         assert len(data) == 2
-        assert data[0]['task_count'] == 20
+        assert data[0]["task_count"] == 20
 
 
 class TestHealthCheck:
@@ -105,11 +111,11 @@ class TestHealthCheck:
 
     def test_health_check_success(self, client):
         """Test GET /api/health returns healthy status."""
-        response = client.get('/api/health')
+        response = client.get("/api/health")
 
         assert response.status_code == 200
         data = json.loads(response.data)
-        assert data['status'] == 'healthy'
+        assert data["status"] == "healthy"
 
 
 class TestQueryEndpoint:
@@ -118,12 +124,12 @@ class TestQueryEndpoint:
     def test_select_query_success(self, client, mock_get_db_connection):
         """Test POST /api/query with SELECT statement."""
         mock_conn, mock_cursor = mock_get_db_connection
-        mock_cursor.fetchall.return_value = [{'name': 'John'}]
+        mock_cursor.fetchall.return_value = [{"name": "John"}]
 
         response = client.post(
-            '/api/query',
-            data=json.dumps({'query': 'SELECT * FROM Person'}),
-            content_type='application/json'
+            "/api/query",
+            data=json.dumps({"query": "SELECT * FROM Person"}),
+            content_type="application/json",
         )
 
         assert response.status_code == 200
@@ -134,24 +140,25 @@ class TestQueryEndpoint:
         mock_cursor.rowcount = 1
 
         response = client.post(
-            '/api/query',
+            "/api/query",
             data=json.dumps(
-                {'query': "UPDATE Person SET name='Jane' WHERE personal_id='P001'"}),
-            content_type='application/json'
+                {"query": "UPDATE Person SET name='Jane' WHERE personal_id='P001'"}
+            ),
+            content_type="application/json",
         )
 
         assert response.status_code == 200
         data = json.loads(response.data)
-        assert 'rows_affected' in data
+        assert "rows_affected" in data
 
     def test_empty_query_fails(self, client, mock_get_db_connection):
         """Test POST /api/query with empty query fails."""
         mock_conn, mock_cursor = mock_get_db_connection
 
         response = client.post(
-            '/api/query',
-            data=json.dumps({'query': '   '}),
-            content_type='application/json'
+            "/api/query",
+            data=json.dumps({"query": "   "}),
+            content_type="application/json",
         )
 
         assert response.status_code == 400
@@ -159,9 +166,7 @@ class TestQueryEndpoint:
     def test_missing_query_fails(self, client):
         """Test POST /api/query without query parameter fails."""
         response = client.post(
-            '/api/query',
-            data=json.dumps({}),
-            content_type='application/json'
+            "/api/query", data=json.dumps({}), content_type="application/json"
         )
 
         assert response.status_code == 400

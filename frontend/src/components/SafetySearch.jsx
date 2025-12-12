@@ -21,7 +21,9 @@ export default function SafetySearch() {
     try {
       // Fetch unique buildings from locations
       const res = await axios.get(`${API_URL}/locations`);
-      const uniqueBuildings = [...new Set(res.data.map((l) => l.building).filter(Boolean))];
+      const uniqueBuildings = [
+        ...new Set(res.data.map((l) => l.building).filter(Boolean)),
+      ];
       setBuildings(uniqueBuildings);
     } catch (err) {
       console.error("Failed to fetch buildings", err);
@@ -57,7 +59,9 @@ export default function SafetySearch() {
     <div className="page-container">
       <div className="header-section">
         <h2>Safety Search</h2>
-        <p className="subtitle">Find cleaning activities and check for chemical hazards</p>
+        <p className="subtitle">
+          Find cleaning activities and check for chemical hazards
+        </p>
       </div>
 
       <div
@@ -72,10 +76,21 @@ export default function SafetySearch() {
       >
         <form
           onSubmit={handleSearch}
-          style={{ display: "flex", gap: "15px", alignItems: "end", flexWrap: "wrap" }}
+          style={{
+            display: "flex",
+            gap: "15px",
+            alignItems: "end",
+            flexWrap: "wrap",
+          }}
         >
           <div style={{ flex: 1, minWidth: "180px" }}>
-            <label style={{ display: "block", marginBottom: "8px", fontWeight: "500" }}>
+            <label
+              style={{
+                display: "block",
+                marginBottom: "8px",
+                fontWeight: "500",
+              }}
+            >
               Building
             </label>
             <select
@@ -97,8 +112,17 @@ export default function SafetySearch() {
             </select>
           </div>
           <div style={{ flex: 1, minWidth: "180px" }}>
-            <label style={{ display: "block", marginBottom: "8px", fontWeight: "500" }}>
-              <Calendar size={14} style={{ marginRight: "4px", verticalAlign: "middle" }} />
+            <label
+              style={{
+                display: "block",
+                marginBottom: "8px",
+                fontWeight: "500",
+              }}
+            >
+              <Calendar
+                size={14}
+                style={{ marginRight: "4px", verticalAlign: "middle" }}
+              />
               Start Date/Time
             </label>
             <input
@@ -114,8 +138,17 @@ export default function SafetySearch() {
             />
           </div>
           <div style={{ flex: 1, minWidth: "180px" }}>
-            <label style={{ display: "block", marginBottom: "8px", fontWeight: "500" }}>
-              <Calendar size={14} style={{ marginRight: "4px", verticalAlign: "middle" }} />
+            <label
+              style={{
+                display: "block",
+                marginBottom: "8px",
+                fontWeight: "500",
+              }}
+            >
+              <Calendar
+                size={14}
+                style={{ marginRight: "4px", verticalAlign: "middle" }}
+              />
               End Date/Time
             </label>
             <input
@@ -158,7 +191,10 @@ export default function SafetySearch() {
               </thead>
               <tbody>
                 {results.map((item, idx) => (
-                  <tr key={idx} style={item.warning ? { backgroundColor: "#fff5f5" } : {}}>
+                  <tr
+                    key={idx}
+                    style={item.warning ? { backgroundColor: "#fff5f5" } : {}}
+                  >
                     <td>{item.type}</td>
                     <td>
                       {item.building} - {item.room} (Floor {item.floor})
@@ -190,7 +226,9 @@ export default function SafetySearch() {
           </div>
         ) : (
           !loading && (
-            <p style={{ textAlign: "center", color: "#666", marginTop: "40px" }}>
+            <p
+              style={{ textAlign: "center", color: "#666", marginTop: "40px" }}
+            >
               No results found. Select a building to search.
             </p>
           )

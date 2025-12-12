@@ -36,7 +36,9 @@ describe("SafetySearch Component", () => {
     render(<SafetySearch />);
 
     await waitFor(() => {
-      expect(axios.get).toHaveBeenCalledWith(expect.stringContaining("/locations"));
+      expect(axios.get).toHaveBeenCalledWith(
+        expect.stringContaining("/locations"),
+      );
     });
 
     const select = screen.getByRole("combobox");
@@ -75,7 +77,7 @@ describe("SafetySearch Component", () => {
         expect.stringContaining("/search/safety"),
         expect.objectContaining({
           params: { building: "Block A" },
-        })
+        }),
       );
     });
   });
@@ -108,7 +110,9 @@ describe("SafetySearch Component", () => {
         return Promise.resolve({ data: mockLocations });
       }
       if (url.includes("/search/safety")) {
-        return Promise.reject({ response: { data: { error: "Search failed" } } });
+        return Promise.reject({
+          response: { data: { error: "Search failed" } },
+        });
       }
       return Promise.reject(new Error("Unknown"));
     });

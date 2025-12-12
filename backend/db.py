@@ -1,14 +1,14 @@
-import mysql.connector
-from mysql.connector import Error
 import os
 from pathlib import Path
-from dotenv import load_dotenv
 
+import mysql.connector
+from dotenv import load_dotenv
+from mysql.connector import Error
 
 # Load environment variables from a .env file, if present.
 # Prefer backend/.env, but also support a project-root .env when run from there.
 BASE_DIR = Path(__file__).resolve().parent
-ENV_PATHS = [BASE_DIR / '.env', BASE_DIR.parent / '.env']
+ENV_PATHS = [BASE_DIR / ".env", BASE_DIR.parent / ".env"]
 
 for env_path in ENV_PATHS:
     if env_path.exists():
@@ -26,10 +26,10 @@ else:
 def get_db_connection():
     try:
         connection = mysql.connector.connect(
-            host=os.getenv('DB_HOST', 'localhost'),
-            user=os.getenv('DB_USER', 'root'),
-            password=os.getenv('DB_PASSWORD', ''),
-            database=os.getenv('DB_NAME', 'cmms_db')
+            host=os.getenv("DB_HOST", "localhost"),
+            user=os.getenv("DB_USER", "root"),
+            password=os.getenv("DB_PASSWORD", ""),
+            database=os.getenv("DB_NAME", "cmms_db"),
         )
         return connection
     except Error as e:
@@ -75,13 +75,14 @@ def init_db():
         # Try connecting without database to create it
         try:
             conn = mysql.connector.connect(
-                host=os.getenv('DB_HOST', 'localhost'),
-                user=os.getenv('DB_USER', 'root'),
-                password=os.getenv('DB_PASSWORD', '')
+                host=os.getenv("DB_HOST", "localhost"),
+                user=os.getenv("DB_USER", "root"),
+                password=os.getenv("DB_PASSWORD", ""),
             )
             cursor = conn.cursor()
             cursor.execute(
-                f"CREATE DATABASE IF NOT EXISTS {os.getenv('DB_NAME', 'cmms_db')}")
+                f"CREATE DATABASE IF NOT EXISTS {os.getenv('DB_NAME', 'cmms_db')}"
+            )
             print("Database created or already exists.")
             conn.close()
             conn = get_db_connection()
@@ -91,18 +92,17 @@ def init_db():
 
     if conn:
         cursor = conn.cursor()
-        schema_path = BASE_DIR / 'schema.sql'
-        with open(schema_path, 'r') as f:
+        schema_path = BASE_DIR / "schema.sql"
+        with open(schema_path, "r") as f:
             schema = f.read()
             # Split by semicolon to execute multiple statements
-            statements = schema.split(';')
+            statements = schema.split(";")
             for statement in statements:
                 if statement.strip():
                     try:
                         cursor.execute(statement)
                     except Error as e:
-                        print(
-                            f"Error executing statement: {statement[:50]}... -> {e}")
+                        print(f"Error executing statement: {statement[:50]}... -> {e}")
         conn.commit()
         cursor.close()
         conn.close()

@@ -25,7 +25,9 @@ function runCommand(command, args, options = {}) {
       if (code === 0) {
         resolve();
       } else {
-        reject(new Error(`${command} ${args.join(" ")} exited with code ${code}`));
+        reject(
+          new Error(`${command} ${args.join(" ")} exited with code ${code}`),
+        );
       }
     });
   });
@@ -53,7 +55,11 @@ async function startDockerStack() {
   throw lastError || new Error("Failed to start Docker stack");
 }
 
-function waitForFrontendReady(url, maxRetries = MAX_RETRIES, delayMs = RETRY_DELAY_MS) {
+function waitForFrontendReady(
+  url,
+  maxRetries = MAX_RETRIES,
+  delayMs = RETRY_DELAY_MS,
+) {
   const target = new URL(url);
 
   return new Promise((resolve, reject) => {
@@ -81,12 +87,14 @@ function waitForFrontendReady(url, maxRetries = MAX_RETRIES, delayMs = RETRY_DEL
             res.resume();
             setTimeout(attempt, delayMs);
           }
-        }
+        },
       );
 
       req.on("error", () => {
         if (attempts >= maxRetries) {
-          reject(new Error(`Frontend not reachable after ${attempts} attempts`));
+          reject(
+            new Error(`Frontend not reachable after ${attempts} attempts`),
+          );
         } else {
           setTimeout(attempt, delayMs);
         }
@@ -116,7 +124,7 @@ async function createMainWindow() {
     console.error("Failed to start app stack:", err);
     dialog.showErrorBox(
       "Startup error",
-      `Failed to connect to the application.\n\n${err && err.message ? err.message : String(err)}`
+      `Failed to connect to the application.\n\n${err && err.message ? err.message : String(err)}`,
     );
   }
 }

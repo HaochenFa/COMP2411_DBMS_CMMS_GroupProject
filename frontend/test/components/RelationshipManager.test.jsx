@@ -51,7 +51,9 @@ describe("RelationshipManager Component", () => {
     render(<RelationshipManager {...defaultProps} />);
 
     await waitFor(() => {
-      expect(axios.get).toHaveBeenCalledWith(expect.stringContaining("/participations"));
+      expect(axios.get).toHaveBeenCalledWith(
+        expect.stringContaining("/participations"),
+      );
     });
   });
 
@@ -74,7 +76,9 @@ describe("RelationshipManager Component", () => {
   });
 
   it("should display error when fetch fails", async () => {
-    axios.get.mockRejectedValue({ response: { data: { error: "Connection failed" } } });
+    axios.get.mockRejectedValue({
+      response: { data: { error: "Connection failed" } },
+    });
 
     render(<RelationshipManager {...defaultProps} />);
 
@@ -87,7 +91,9 @@ describe("RelationshipManager Component", () => {
     render(<RelationshipManager {...defaultProps} />);
 
     await waitFor(() => {
-      expect(screen.getByRole("button", { name: /export/i })).toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: /export/i }),
+      ).toBeInTheDocument();
     });
   });
 });

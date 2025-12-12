@@ -49,13 +49,19 @@ export default function Layout({ children }) {
 
         {/* Role indicator */}
         <div className="role-indicator">
-          <span className={`role-badge role-${role?.toLowerCase()}`}>{role}</span>
+          <span className={`role-badge role-${role?.toLowerCase()}`}>
+            {role}
+          </span>
         </div>
 
         <NavLink to="/" icon={LayoutDashboard} permission="canViewDashboard">
           Dashboard
         </NavLink>
-        <NavLink to="/safety-search" icon={ShieldAlert} permission="canViewSafetySearch">
+        <NavLink
+          to="/safety-search"
+          icon={ShieldAlert}
+          permission="canViewSafetySearch"
+        >
           Safety Search
         </NavLink>
         <NavLink to="/reports" icon={FileText} permission="canViewReports">
@@ -87,15 +93,33 @@ export default function Layout({ children }) {
         </NavLink>
 
         <div className="sidebar-section">Relationships</div>
-        <NavLink to="/participations" icon={LinkIcon} permission="canViewEntities">
+        <NavLink
+          to="/participations"
+          icon={LinkIcon}
+          permission="canViewEntities"
+        >
           Participations
         </NavLink>
-        <NavLink to="/affiliations" icon={LinkIcon} permission="canViewEntities">
+        <NavLink
+          to="/affiliations"
+          icon={LinkIcon}
+          permission="canViewEntities"
+        >
           Affiliations
         </NavLink>
 
-        <div style={{ marginTop: "auto", borderTop: "1px solid #eee", paddingTop: "10px" }}>
-          <NavLink to="/dev-console" icon={Database} permission="canViewDevConsole">
+        <div
+          style={{
+            marginTop: "auto",
+            borderTop: "1px solid #eee",
+            paddingTop: "10px",
+          }}
+        >
+          <NavLink
+            to="/dev-console"
+            icon={Database}
+            permission="canViewDevConsole"
+          >
             Dev Console
           </NavLink>
           <button className="sidebar-logout" onClick={handleLogout}>

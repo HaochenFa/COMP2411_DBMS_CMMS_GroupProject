@@ -1,6 +1,12 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Play, Trash2, AlertTriangle, CheckCircle, XCircle } from "lucide-react";
+import {
+  Play,
+  Trash2,
+  AlertTriangle,
+  CheckCircle,
+  XCircle,
+} from "lucide-react";
 
 const API_URL = "http://127.0.0.1:5050/api";
 
@@ -33,7 +39,15 @@ class ErrorBoundary extends React.Component {
 }
 
 // Dangerous SQL keywords that require confirmation
-const DANGEROUS_KEYWORDS = ["DELETE", "DROP", "TRUNCATE", "UPDATE", "ALTER", "INSERT", "CREATE"];
+const DANGEROUS_KEYWORDS = [
+  "DELETE",
+  "DROP",
+  "TRUNCATE",
+  "UPDATE",
+  "ALTER",
+  "INSERT",
+  "CREATE",
+];
 
 function DevConsoleContent() {
   // Initialize state from localStorage
@@ -118,7 +132,7 @@ function DevConsoleContent() {
     const dangerousOp = getDangerousOperation(query);
     if (dangerousOp) {
       setWarningMessage(
-        `You are about to execute a ${dangerousOp} operation. This may permanently modify or delete data. Are you sure you want to proceed?`
+        `You are about to execute a ${dangerousOp} operation. This may permanently modify or delete data. Are you sure you want to proceed?`,
       );
       setShowWarning(true);
       return;
@@ -139,7 +153,9 @@ function DevConsoleContent() {
   };
 
   const addToHistory = (sql, status) => {
-    setHistory((prev) => [{ sql, status, timestamp: new Date() }, ...prev].slice(0, 10));
+    setHistory((prev) =>
+      [{ sql, status, timestamp: new Date() }, ...prev].slice(0, 10),
+    );
   };
 
   const loadFromHistory = (sql) => {
@@ -205,7 +221,13 @@ function DevConsoleContent() {
                 Warning: Dangerous Operation
               </h3>
             </div>
-            <p style={{ color: "#4b5563", marginBottom: "20px", lineHeight: "1.5" }}>
+            <p
+              style={{
+                color: "#4b5563",
+                marginBottom: "20px",
+                lineHeight: "1.5",
+              }}
+            >
               {warningMessage}
             </p>
             <div
@@ -224,7 +246,13 @@ function DevConsoleContent() {
             >
               {query}
             </div>
-            <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
+            <div
+              style={{
+                display: "flex",
+                gap: "12px",
+                justifyContent: "flex-end",
+              }}
+            >
               <button
                 onClick={handleCancelExecution}
                 style={{
@@ -277,13 +305,21 @@ function DevConsoleContent() {
             <AlertTriangle size={14} /> DANGER ZONE
           </span>
         </div>
-        <p className="subtitle">Execute raw SQL queries directly against the database.</p>
+        <p className="subtitle">
+          Execute raw SQL queries directly against the database.
+        </p>
       </div>
 
       <div style={{ display: "flex", gap: "20px", flex: 1, minHeight: 0 }}>
         {/* Left Panel: Editor & Results */}
         <div
-          style={{ flex: 3, display: "flex", flexDirection: "column", gap: "15px", minWidth: 0 }}
+          style={{
+            flex: 3,
+            display: "flex",
+            flexDirection: "column",
+            gap: "15px",
+            minWidth: 0,
+          }}
         >
           {/* Editor Container */}
           <div
@@ -403,7 +439,9 @@ function DevConsoleContent() {
               {results ? (
                 Array.isArray(results) ? (
                   results.length > 0 ? (
-                    <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                    <table
+                      style={{ width: "100%", borderCollapse: "collapse" }}
+                    >
                       <thead style={{ position: "sticky", top: 0, zIndex: 1 }}>
                         <tr>
                           {Object.keys(results[0]).map((key) => (
@@ -426,14 +464,28 @@ function DevConsoleContent() {
                       </thead>
                       <tbody>
                         {results.map((row, i) => (
-                          <tr key={i} style={{ borderBottom: "1px solid #f0f0f0" }}>
+                          <tr
+                            key={i}
+                            style={{ borderBottom: "1px solid #f0f0f0" }}
+                          >
                             {Object.values(row).map((val, j) => (
                               <td
                                 key={j}
-                                style={{ padding: "8px 10px", fontSize: "13px", color: "#333" }}
+                                style={{
+                                  padding: "8px 10px",
+                                  fontSize: "13px",
+                                  color: "#333",
+                                }}
                               >
                                 {val === null ? (
-                                  <span style={{ color: "#999", fontStyle: "italic" }}>NULL</span>
+                                  <span
+                                    style={{
+                                      color: "#999",
+                                      fontStyle: "italic",
+                                    }}
+                                  >
+                                    NULL
+                                  </span>
                                 ) : (
                                   String(val)
                                 )}
@@ -474,8 +526,16 @@ function DevConsoleContent() {
                 )
               ) : (
                 !error && (
-                  <div style={{ padding: "40px", textAlign: "center", color: "#ccc" }}>
-                    <div style={{ marginBottom: "10px" }}>Results will appear here</div>
+                  <div
+                    style={{
+                      padding: "40px",
+                      textAlign: "center",
+                      color: "#ccc",
+                    }}
+                  >
+                    <div style={{ marginBottom: "10px" }}>
+                      Results will appear here
+                    </div>
                   </div>
                 )
               )}
@@ -552,7 +612,11 @@ function DevConsoleContent() {
                   }}
                 >
                   <span>{new Date(item.timestamp).toLocaleTimeString()}</span>
-                  <span style={{ color: item.status === "success" ? "#10b981" : "#ef4444" }}>
+                  <span
+                    style={{
+                      color: item.status === "success" ? "#10b981" : "#ef4444",
+                    }}
+                  >
                     {item.status === "success" ? "Success" : "Failed"}
                   </span>
                 </div>

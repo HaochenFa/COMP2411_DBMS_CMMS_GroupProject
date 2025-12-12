@@ -33,7 +33,9 @@ export default function BuildingSupervision() {
       setManagers(mgrData.data || mgrData || []);
 
       // Extract unique buildings
-      const uniqueBuildings = [...new Set((bldData.data || bldData || []).map((l) => l.building))];
+      const uniqueBuildings = [
+        ...new Set((bldData.data || bldData || []).map((l) => l.building)),
+      ];
       setBuildings(uniqueBuildings);
       setError(null);
     } catch (err) {
@@ -70,7 +72,9 @@ export default function BuildingSupervision() {
   const handleDelete = async (id) => {
     if (!window.confirm("Remove this supervision assignment?")) return;
     try {
-      const res = await fetch(`${API_BASE}/building-supervision/${id}`, { method: "DELETE" });
+      const res = await fetch(`${API_BASE}/building-supervision/${id}`, {
+        method: "DELETE",
+      });
       if (!res.ok) throw new Error("Failed to delete");
       fetchData();
     } catch (err) {
@@ -83,13 +87,18 @@ export default function BuildingSupervision() {
   return (
     <div className="building-supervision">
       <div className="page-header">
-        <h1><Building2 size={28} /> Building Supervision</h1>
+        <h1>
+          <Building2 size={28} /> Building Supervision
+        </h1>
         <div className="header-actions">
           <button className="btn-secondary" onClick={fetchData}>
             <RefreshCw size={16} /> Refresh
           </button>
           {canModify && (
-            <button className="btn-primary" onClick={() => setShowForm(!showForm)}>
+            <button
+              className="btn-primary"
+              onClick={() => setShowForm(!showForm)}
+            >
               <Plus size={16} /> Assign Manager
             </button>
           )}
@@ -102,7 +111,9 @@ export default function BuildingSupervision() {
         <form className="supervision-form" onSubmit={handleSubmit}>
           <select
             value={formData.personal_id}
-            onChange={(e) => setFormData({ ...formData, personal_id: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, personal_id: e.target.value })
+            }
             required
           >
             <option value="">Select Manager</option>
@@ -114,16 +125,26 @@ export default function BuildingSupervision() {
           </select>
           <select
             value={formData.building}
-            onChange={(e) => setFormData({ ...formData, building: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, building: e.target.value })
+            }
             required
           >
             <option value="">Select Building</option>
             {buildings.map((b) => (
-              <option key={b} value={b}>{b}</option>
+              <option key={b} value={b}>
+                {b}
+              </option>
             ))}
           </select>
-          <button type="submit" className="btn-primary">Assign</button>
-          <button type="button" className="btn-secondary" onClick={() => setShowForm(false)}>
+          <button type="submit" className="btn-primary">
+            Assign
+          </button>
+          <button
+            type="button"
+            className="btn-secondary"
+            onClick={() => setShowForm(false)}
+          >
             Cancel
           </button>
         </form>
@@ -140,16 +161,31 @@ export default function BuildingSupervision() {
         </thead>
         <tbody>
           {supervisions.length === 0 ? (
-            <tr><td colSpan={canModify ? 4 : 3}>No supervision assignments found</td></tr>
+            <tr>
+              <td colSpan={canModify ? 4 : 3}>
+                No supervision assignments found
+              </td>
+            </tr>
           ) : (
             supervisions.map((s) => (
               <tr key={s.supervision_id}>
-                <td><UserCheck size={16} /> {s.manager_name} ({s.personal_id})</td>
-                <td><Building2 size={16} /> {s.building}</td>
-                <td>{s.assigned_date ? new Date(s.assigned_date).toLocaleDateString() : "-"}</td>
+                <td>
+                  <UserCheck size={16} /> {s.manager_name} ({s.personal_id})
+                </td>
+                <td>
+                  <Building2 size={16} /> {s.building}
+                </td>
+                <td>
+                  {s.assigned_date
+                    ? new Date(s.assigned_date).toLocaleDateString()
+                    : "-"}
+                </td>
                 {canModify && (
                   <td>
-                    <button className="btn-danger btn-sm" onClick={() => handleDelete(s.supervision_id)}>
+                    <button
+                      className="btn-danger btn-sm"
+                      onClick={() => handleDelete(s.supervision_id)}
+                    >
                       <Trash2 size={14} />
                     </button>
                   </td>
@@ -162,4 +198,3 @@ export default function BuildingSupervision() {
     </div>
   );
 }
-

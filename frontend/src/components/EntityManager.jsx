@@ -5,7 +5,13 @@ import { useRole } from "../context/RoleContext";
 
 const API_URL = "http://127.0.0.1:5050/api";
 
-export default function EntityManager({ title, endpoint, columns, idField, createFields }) {
+export default function EntityManager({
+  title,
+  endpoint,
+  columns,
+  idField,
+  createFields,
+}) {
   const { hasPermission } = useRole();
   const canCreate = hasPermission("canCreate");
   const canUpdate = hasPermission("canUpdate");
@@ -28,7 +34,9 @@ export default function EntityManager({ title, endpoint, columns, idField, creat
       setItems(res.data);
       setError(null);
     } catch (err) {
-      setError("Failed to fetch data: " + (err.response?.data?.error || err.message));
+      setError(
+        "Failed to fetch data: " + (err.response?.data?.error || err.message),
+      );
     }
   }, [endpoint]);
 
@@ -58,10 +66,15 @@ export default function EntityManager({ title, endpoint, columns, idField, creat
         for (const field of fields) {
           if (field.type === "cascading-select" && field.unique) {
             // Get unique values for this field
-            const uniqueValues = [...new Set(res.data.map((item) => item[field.optionValue]))];
+            const uniqueValues = [
+              ...new Set(res.data.map((item) => item[field.optionValue])),
+            ];
             optionsMap[field.name] = uniqueValues.map((val) => ({
               value: val,
-              label: field.optionLabel({ [field.optionValue]: val, building: val }),
+              label: field.optionLabel({
+                [field.optionValue]: val,
+                building: val,
+              }),
             }));
           } else if (field.type !== "cascading-select" || !field.dependsOn) {
             optionsMap[field.name] = res.data.map((item) => ({
@@ -93,7 +106,9 @@ export default function EntityManager({ title, endpoint, columns, idField, creat
       setIsCreating(false);
       setError(null);
     } catch (err) {
-      setError("Failed to create item: " + (err.response?.data?.error || err.message));
+      setError(
+        "Failed to create item: " + (err.response?.data?.error || err.message),
+      );
     }
   };
 
@@ -104,7 +119,9 @@ export default function EntityManager({ title, endpoint, columns, idField, creat
       fetchItems();
       setError(null);
     } catch (err) {
-      setError("Failed to delete item: " + (err.response?.data?.error || err.message));
+      setError(
+        "Failed to delete item: " + (err.response?.data?.error || err.message),
+      );
     }
   };
 
@@ -125,7 +142,9 @@ export default function EntityManager({ title, endpoint, columns, idField, creat
       fetchItems();
       setError(null);
     } catch (err) {
-      setError("Failed to update item: " + (err.response?.data?.error || err.message));
+      setError(
+        "Failed to update item: " + (err.response?.data?.error || err.message),
+      );
     }
   };
 
@@ -158,7 +177,9 @@ export default function EntityManager({ title, endpoint, columns, idField, creat
         setError(null);
         alert(`Successfully imported ${items.length} items.`);
       } catch (err) {
-        setError("Failed to import: " + (err.response?.data?.error || err.message));
+        setError(
+          "Failed to import: " + (err.response?.data?.error || err.message),
+        );
       }
     };
     reader.readAsText(importFile);
@@ -199,7 +220,11 @@ export default function EntityManager({ title, endpoint, columns, idField, creat
         value = String(value);
 
         // Escape quotes and wrap in quotes if contains comma, quote, or newline
-        if (value.includes(",") || value.includes('"') || value.includes("\n")) {
+        if (
+          value.includes(",") ||
+          value.includes('"') ||
+          value.includes("\n")
+        ) {
           value = `"${value.replace(/"/g, '""')}"`;
         }
 
@@ -217,7 +242,7 @@ export default function EntityManager({ title, endpoint, columns, idField, creat
     link.setAttribute("href", url);
     link.setAttribute(
       "download",
-      `${endpoint}_export_${new Date().toISOString().split("T")[0]}.csv`
+      `${endpoint}_export_${new Date().toISOString().split("T")[0]}.csv`,
     );
     document.body.appendChild(link);
     link.click();
@@ -229,18 +254,29 @@ export default function EntityManager({ title, endpoint, columns, idField, creat
     <div className="page-container">
       <div
         className="header-section"
-        style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
       >
         <div>
           <h2>{title}</h2>
           <p className="subtitle">Manage {title.toLowerCase()} records</p>
         </div>
         <div style={{ display: "flex", gap: "10px" }}>
-          <button onClick={handleExport} className="secondary-btn" disabled={items.length === 0}>
+          <button
+            onClick={handleExport}
+            className="secondary-btn"
+            disabled={items.length === 0}
+          >
             <Download size={16} /> Export CSV
           </button>
           {canCreate && (
-            <button onClick={() => setIsImporting(!isImporting)} className="secondary-btn">
+            <button
+              onClick={() => setIsImporting(!isImporting)}
+              className="secondary-btn"
+            >
               <Upload size={16} /> Import CSV
             </button>
           )}
@@ -307,7 +343,9 @@ export default function EntityManager({ title, endpoint, columns, idField, creat
                 const parentValue = newItem[field.dependsOn];
                 const rawData = rawOptionsData[field.optionsEndpoint] || [];
                 const filtered = parentValue
-                  ? rawData.filter((item) => item[field.filterBy] === parentValue)
+                  ? rawData.filter(
+                      (item) => item[field.filterBy] === parentValue,
+                    )
                   : [];
                 options = filtered.map((item) => ({
                   value: item[field.optionValue],
@@ -327,7 +365,9 @@ export default function EntityManager({ title, endpoint, columns, idField, creat
                       type="text"
                       list={`${field.name}-list`}
                       value={newItem[field.name] || ""}
-                      onChange={(e) => setNewItem({ ...newItem, [field.name]: e.target.value })}
+                      onChange={(e) =>
+                        setNewItem({ ...newItem, [field.name]: e.target.value })
+                      }
                       placeholder={field.label}
                       required={field.required}
                     />
@@ -350,16 +390,19 @@ export default function EntityManager({ title, endpoint, columns, idField, creat
 
                       // If this is a dependent field with resolveTo, also set the resolved field
                       if (field.resolveTo && val) {
-                        const selectedOpt = options.find((o) => String(o.value) === val);
+                        const selectedOpt = options.find(
+                          (o) => String(o.value) === val,
+                        );
                         if (selectedOpt?._raw) {
-                          updates[field.resolveTo.field] = selectedOpt._raw[field.resolveTo.key];
+                          updates[field.resolveTo.field] =
+                            selectedOpt._raw[field.resolveTo.key];
                         }
                       }
 
                       // If this is a parent field, clear dependent fields
                       if (!field.dependsOn) {
                         const dependentFields = createFields.filter(
-                          (f) => f.dependsOn === field.name
+                          (f) => f.dependsOn === field.name,
                         );
                         dependentFields.forEach((df) => {
                           updates[df.name] = "";
@@ -389,13 +432,18 @@ export default function EntityManager({ title, endpoint, columns, idField, creat
                 <div key={field.name} style={{ flex: "1 1 200px" }}>
                   <select
                     value={newItem[field.name] || ""}
-                    onChange={(e) => setNewItem({ ...newItem, [field.name]: e.target.value })}
+                    onChange={(e) =>
+                      setNewItem({ ...newItem, [field.name]: e.target.value })
+                    }
                     required={field.required}
                   >
                     <option value="">Select {field.label}</option>
                     {field.options
                       ? field.options.map((opt) => (
-                          <option key={opt} value={opt === "Yes" ? 1 : opt === "No" ? 0 : opt}>
+                          <option
+                            key={opt}
+                            value={opt === "Yes" ? 1 : opt === "No" ? 0 : opt}
+                          >
                             {opt}
                           </option>
                         ))
@@ -416,7 +464,9 @@ export default function EntityManager({ title, endpoint, columns, idField, creat
                   type={field.type || "text"}
                   placeholder={field.label}
                   value={newItem[field.name] || ""}
-                  onChange={(e) => setNewItem({ ...newItem, [field.name]: e.target.value })}
+                  onChange={(e) =>
+                    setNewItem({ ...newItem, [field.name]: e.target.value })
+                  }
                   required={field.required}
                 />
               </div>
@@ -443,9 +493,13 @@ export default function EntityManager({ title, endpoint, columns, idField, creat
               <tr key={item[idField] || idx}>
                 {columns.map((col) => {
                   const rawValue = item[col.key];
-                  const displayValue = col.render ? col.render(rawValue, item) : rawValue;
+                  const displayValue = col.render
+                    ? col.render(rawValue, item)
+                    : rawValue;
                   // Find matching createField for this column to get field type/options
-                  const fieldConfig = createFields.find((f) => f.name === col.key);
+                  const fieldConfig = createFields.find(
+                    (f) => f.name === col.key,
+                  );
                   // Get options: either static options or dynamic options from API
                   const selectOptions = fieldConfig?.optionsEndpoint
                     ? dynamicOptions[fieldConfig.name] || []
@@ -460,7 +514,10 @@ export default function EntityManager({ title, endpoint, columns, idField, creat
                           <select
                             value={editFormData[col.key] ?? ""}
                             onChange={(e) =>
-                              setEditFormData({ ...editFormData, [col.key]: e.target.value })
+                              setEditFormData({
+                                ...editFormData,
+                                [col.key]: e.target.value,
+                              })
                             }
                           >
                             <option value="">Select...</option>
@@ -474,7 +531,10 @@ export default function EntityManager({ title, endpoint, columns, idField, creat
                           <input
                             value={editFormData[col.key] || ""}
                             onChange={(e) =>
-                              setEditFormData({ ...editFormData, [col.key]: e.target.value })
+                              setEditFormData({
+                                ...editFormData,
+                                [col.key]: e.target.value,
+                              })
                             }
                           />
                         )
@@ -501,7 +561,10 @@ export default function EntityManager({ title, endpoint, columns, idField, creat
                     ) : (
                       <>
                         {canUpdate && (
-                          <button onClick={() => startEdit(item)} className="icon-btn">
+                          <button
+                            onClick={() => startEdit(item)}
+                            className="icon-btn"
+                          >
                             <Edit2 size={16} />
                           </button>
                         )}
