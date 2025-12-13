@@ -55,17 +55,23 @@ describe("Desktop Main Process", () => {
                   resolve();
                 } else if (attempts >= maxRetries) {
                   res.resume();
-                  reject(new Error(`Frontend not ready after ${attempts} attempts`));
+                  reject(
+                    new Error(`Frontend not ready after ${attempts} attempts`),
+                  );
                 } else {
                   res.resume();
                   setTimeout(attempt, delayMs);
                 }
-              }
+              },
             );
 
             req.on("error", () => {
               if (attempts >= maxRetries) {
-                reject(new Error(`Frontend not reachable after ${attempts} attempts`));
+                reject(
+                  new Error(
+                    `Frontend not reachable after ${attempts} attempts`,
+                  ),
+                );
               } else {
                 setTimeout(attempt, delayMs);
               }
@@ -76,7 +82,9 @@ describe("Desktop Main Process", () => {
         });
       };
 
-      await expect(waitForFrontendReady(`http://localhost:${serverPort}`)).resolves.toBeUndefined();
+      await expect(
+        waitForFrontendReady(`http://localhost:${serverPort}`),
+      ).resolves.toBeUndefined();
     });
 
     it("should reject after max retries when server is down", async () => {
@@ -102,17 +110,23 @@ describe("Desktop Main Process", () => {
                   resolve();
                 } else if (attempts >= maxRetries) {
                   res.resume();
-                  reject(new Error(`Frontend not ready after ${attempts} attempts`));
+                  reject(
+                    new Error(`Frontend not ready after ${attempts} attempts`),
+                  );
                 } else {
                   res.resume();
                   setTimeout(attempt, delayMs);
                 }
-              }
+              },
             );
 
             req.on("error", () => {
               if (attempts >= maxRetries) {
-                reject(new Error(`Frontend not reachable after ${attempts} attempts`));
+                reject(
+                  new Error(
+                    `Frontend not reachable after ${attempts} attempts`,
+                  ),
+                );
               } else {
                 setTimeout(attempt, delayMs);
               }
@@ -124,9 +138,9 @@ describe("Desktop Main Process", () => {
       };
 
       // Use a port that's definitely not in use
-      await expect(waitForFrontendReady("http://localhost:59999", 2, 50)).rejects.toThrow(
-        "Frontend not reachable after 2 attempts"
-      );
+      await expect(
+        waitForFrontendReady("http://localhost:59999", 2, 50),
+      ).rejects.toThrow("Frontend not reachable after 2 attempts");
     });
   });
 
@@ -145,7 +159,11 @@ describe("Desktop Main Process", () => {
             if (code === 0) {
               resolve();
             } else {
-              reject(new Error(`${command} ${args.join(" ")} exited with code ${code}`));
+              reject(
+                new Error(
+                  `${command} ${args.join(" ")} exited with code ${code}`,
+                ),
+              );
             }
           });
         });
@@ -168,15 +186,19 @@ describe("Desktop Main Process", () => {
             if (code === 0) {
               resolve();
             } else {
-              reject(new Error(`${command} ${args.join(" ")} exited with code ${code}`));
+              reject(
+                new Error(
+                  `${command} ${args.join(" ")} exited with code ${code}`,
+                ),
+              );
             }
           });
         });
       };
 
-      await expect(runCommand("node", ["-e", "process.exit(1)"])).rejects.toThrow(
-        "exited with code 1"
-      );
+      await expect(
+        runCommand("node", ["-e", "process.exit(1)"]),
+      ).rejects.toThrow("exited with code 1");
     });
   });
 });
